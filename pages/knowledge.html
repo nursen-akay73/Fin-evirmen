@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bilgi tabanına ekle — FinÇevirmen</title>
+    <link rel="stylesheet" href="/style.css?v=story1" />
+  </head>
+  <body class="inner-body">
+    <header class="inner-nav">
+      <a href="/" data-transition class="inner-brand">FinÇevirmen</a>
+      <nav>
+        <a href="/nasil-calisir" data-transition>Nasıl çalışır</a>
+        <a href="/bilgi" data-transition aria-current="page">Bilgi tabanı</a>
+      </nav>
+    </header>
+
+    <div class="page">
+      <section class="card knowledge-card" id="knowledge" aria-labelledby="kb-title">
+        <h2 id="kb-title">Bilgi tabanına ekle</h2>
+        <p class="hint">
+          Eklediğiniz terim, belge ve görüntüler Neon’a yazılır. Sonraki
+          sorularda RAG bunları da arar.
+        </p>
+        <p class="kb-stats" id="kb-stats">Bilgi tabanı yükleniyor…</p>
+        <div class="kb-grid">
+          <form id="term-form">
+            <h3>Terim ekle</h3>
+            <label class="field">
+              <span>Terim</span>
+              <input id="term-name" name="terim" type="text" required placeholder="Örn. Temerrüt" />
+            </label>
+            <label class="field">
+              <span>Kategori</span>
+              <input id="term-category" name="kategori" type="text" placeholder="Kredi, muhasebe…" />
+            </label>
+            <label class="field">
+              <span>Açıklama</span>
+              <textarea id="term-explain" name="aciklama" rows="4" required placeholder="Sade Türkçe anlamı"></textarea>
+            </label>
+            <label class="field">
+              <span>Örnek (isteğe bağlı)</span>
+              <input id="term-example" name="ornek" type="text" placeholder="Kısa bir cümle" />
+            </label>
+            <button type="submit" id="term-button">Terimi kaydet</button>
+          </form>
+
+          <form id="doc-form">
+            <h3>Belge ekle</h3>
+            <p class="hint">PDF, TXT veya MD. Metin parçalanıp vektör olarak saklanır.</p>
+            <label class="file-label">
+              <input id="kb-doc-file" type="file" accept=".pdf,.txt,.md,application/pdf,text/plain" required />
+              <span id="kb-doc-name">PDF veya metin seçin</span>
+            </label>
+            <button type="submit" id="doc-button">Belgeyi ekle</button>
+          </form>
+
+          <form id="image-form">
+            <h3>Görüntü ekle</h3>
+            <p class="hint">Dekont, ekstre veya sözleşme fotoğrafı. Metin okunup eklenir.</p>
+            <label class="file-label">
+              <input id="kb-image-file" type="file" accept="image/png,image/jpeg,image/webp" required />
+              <span id="kb-image-name">Görüntü seçin</span>
+            </label>
+            <button type="submit" id="image-button">Görüntüyü ekle</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="results card" aria-live="polite">
+        <div class="results-head">
+          <h2>Sonuç</h2>
+          <button
+            type="button"
+            id="speak-button"
+            class="speak-button"
+            hidden
+            aria-pressed="false"
+          >
+            <span class="speak-icon" aria-hidden="true"></span>
+            <span class="speak-label">Seslendir</span>
+          </button>
+        </div>
+        <p id="status" class="status">Henüz bir kayıt eklemediniz.</p>
+        <div id="answer" class="answer" hidden></div>
+        <ul id="sources" class="sources" hidden></ul>
+      </section>
+    </div>
+    <script src="/vendor/gsap.min.js"></script>
+    <script src="/script.js?v=story1" defer></script>
+    <script src="/motion.js?v=story1" defer></script>
+  </body>
+</html>

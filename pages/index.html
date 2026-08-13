@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FinÇevirmen — Finansal dili sade Türkçeye çevir</title>
+    <link rel="stylesheet" href="/style.css?v=story1" />
+    <link rel="stylesheet" href="/hero.css?v=kb1" />
+  </head>
+  <body>
+    <section class="fintech-hero" id="hero" aria-label="FinÇevirmen tanıtım">
+      <div class="fintech-bg" data-hero-bg aria-hidden="true">
+        <div class="hero-atmosphere" data-layer="atmosphere"></div>
+        <div class="hero-grid" data-layer="grid"></div>
+        <div class="hero-gl" data-hero-gl-root aria-hidden="true"></div>
+        <div class="hero-particles" data-layer="particles"></div>
+        <div class="hero-data" data-layer="data"></div>
+        <div class="hero-cursor-light" data-cursor-light></div>
+        <div class="hero-noise" data-layer="noise"></div>
+      </div>
+      <div class="hero-layout">
+        <div class="hero-stage" data-orbit-stage>
+          <div class="logo-core" data-logo-core>
+            <span class="logo-glow" data-logo-glow></span>
+            <img
+              src="/logo.png"
+              alt="FinÇevirmen"
+              width="240"
+              height="240"
+            />
+          </div>
+        </div>
+        <div class="hero-copy" data-hero-copy>
+          <p class="eyebrow reveal-item" style="--d: 150ms">
+            RAG destekli sade dil asistanı
+          </p>
+          <h1>
+            <span class="reveal-line" style="--d: 250ms"
+              ><span>Finansal dili</span></span
+            >
+            <span class="reveal-line" style="--d: 350ms"
+              ><span>sade Türkçeye çevirin</span></span
+            >
+          </h1>
+          <p class="lede reveal-item" style="--d: 500ms">
+            Bilanço terimlerini, kredi kartı jargonunu ve sözleşme maddelerini
+            günlük Türkçeye çevirir. Uydurmaz; sözlük ve yüklediğiniz metne bakar.
+          </p>
+          <div class="hero-actions reveal-item" style="--d: 650ms">
+            <a class="btn-primary" href="#translator" data-magnetic>
+              <span class="btn-label">Terimi açıkla</span>
+            </a>
+            <a class="btn-secondary" href="/nasil-calisir" data-transition data-magnetic>
+              <span class="btn-label">Nasıl çalışır</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="page" id="tools">
+      <main class="grid">
+        <section class="card" id="translator" aria-labelledby="ask-title">
+          <h2 id="ask-title">Terim çevirmeni</h2>
+          <p class="hint">
+            Yazın veya mikrofona basıp sesli sorun. Soru önce sözlükte aranır,
+            sonra modele gider.
+          </p>
+          <form id="ask-form">
+            <label class="sr-only" for="question">Sorunuz</label>
+            <div class="ask-field">
+              <textarea
+                id="question"
+                name="question"
+                rows="6"
+                required
+                placeholder="Örn. Repo nedir? veya Ekstremde asgari ödeme yazıyor, ne demek?"
+              ></textarea>
+              <button
+                type="button"
+                id="mic-button"
+                class="mic-button"
+                aria-pressed="false"
+                aria-label="Sesli sorun"
+                title="Sesli sorun"
+              >
+                <span class="mic-icon" aria-hidden="true"></span>
+              </button>
+            </div>
+            <p id="mic-status" class="mic-status" hidden></p>
+            <button type="submit" id="ask-button">Açıkla</button>
+          </form>
+        </section>
+
+        <section class="card" id="contract" aria-labelledby="upload-title">
+          <h2 id="upload-title">Sözleşme çözümleyici</h2>
+          <p class="hint">
+            Kredi veya kredi kartı sözleşmesi PDF'i yükleyin. Faiz, ceza ve
+            iptal maddeleri özetlenir.
+          </p>
+          <form id="upload-form">
+            <label class="file-label">
+              <input
+                id="pdf-file"
+                type="file"
+                name="file"
+                accept="application/pdf,.pdf"
+                required
+              />
+              <span id="file-name">PDF seçin</span>
+            </label>
+            <button type="submit" id="upload-button">Özetle</button>
+          </form>
+        </section>
+      </main>
+
+      <p class="tool-links">
+        <a href="/bilgi" data-transition>Bilgi tabanına ekle</a>
+        <a href="/nasil-calisir" data-transition>RAG nasıl çalışır</a>
+      </p>
+
+      <section class="results card" aria-live="polite">
+        <div class="results-head">
+          <h2>Sonuç</h2>
+          <button
+            type="button"
+            id="speak-button"
+            class="speak-button"
+            hidden
+            aria-pressed="false"
+          >
+            <span class="speak-icon" aria-hidden="true"></span>
+            <span class="speak-label">Seslendir</span>
+          </button>
+        </div>
+        <p id="status" class="status">Henüz bir soru sormadınız.</p>
+        <div id="answer" class="answer" hidden></div>
+        <ul id="sources" class="sources" hidden></ul>
+      </section>
+    </div>
+    <script src="/vendor/gsap.min.js"></script>
+    <script src="/hero.js?v=kb1" defer></script>
+    <script type="module" src="/hero-app.js?v=kb1"></script>
+    <script src="/script.js?v=story1" defer></script>
+    <script src="/motion.js?v=story1" defer></script>
+  </body>
+</html>

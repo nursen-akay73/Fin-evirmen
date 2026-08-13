@@ -1,0 +1,142 @@
+[
+  {
+    "terim": "Repo",
+    "aciklama": "Bir kurumun elindeki tahvil veya bono gibi bir kıymeti, belirli bir tarihte geri almak şartıyla bugün satmasıdır. Aslında kısa vadeli bir borçlanma yöntemidir; satan taraf o kıymeti teminat gösterip nakit sağlar.",
+    "ornek": "Bir banka, elindeki devlet tahvilini bugün satıp bir hafta sonra geri almayı taahhüt ederse repo yapmış olur."
+  },
+  {
+    "terim": "Ters Repo",
+    "aciklama": "Repo işleminin karşı tarafıdır — bir kıymeti bugün satın alıp, ileride geri satmak üzere elde tutmaktır. Parasını kısa süreliğine, düşük riskle değerlendirmek isteyenler kullanır.",
+    "ornek": "Yatırımcı, bankadan bir hafta vadeli ters repo yaparak parasını kısa süreliğine faize yatırmış olur."
+  },
+  {
+    "terim": "Marjin Çağrısı",
+    "aciklama": "Kredili (borçla) işlem yapan bir yatırımcının hesabındaki teminat, piyasa hareketleri yüzünden belirlenen sınırın altına düştüğünde, aracı kurumun yatırımcıdan ek teminat yatırmasını istemesidir.",
+    "ornek": "Hisse fiyatı düşünce yatırımcının teminatı yetersiz kaldı ve aracı kurum marjin çağrısı yaparak ek para yatırmasını istedi."
+  },
+  {
+    "terim": "Temettü",
+    "aciklama": "Bir şirketin yıl içinde elde ettiği kârdan, ortaklarına/hissedarlarına dağıttığı paydır. Şirket kâr etmese veya dağıtmamayı tercih ederse temettü ödenmeyebilir.",
+    "ornek": "Şirket bu yıl 100 milyon TL kâr etti ve bunun 20 milyonunu hissedarlarına temettü olarak dağıttı."
+  },
+  {
+    "terim": "Temettü Avansı",
+    "aciklama": "Şirketin, yıl sonu kesin kâr rakamı belli olmadan, ara dönem kârından hissedarlarına önceden yaptığı temettü ödemesidir. Yasal olarak belirli şartlara bağlıdır.",
+    "ornek": "Şirket, yılın ilk yarısındaki kârından hissedarlarına temettü avansı dağıtmaya karar verdi."
+  },
+  {
+    "terim": "Likidite",
+    "aciklama": "Bir varlığın, değerinden çok fazla kaybetmeden ne kadar hızlı nakde çevrilebildiğidir. Nakit en likit varlıktır; bir bina veya arsa daha az likittir çünkü satması zaman alır.",
+    "ornek": "Hisse senedi genelde likit bir yatırımdır çünkü borsada hemen satılıp nakde çevrilebilir."
+  },
+  {
+    "terim": "Tahvil",
+    "aciklama": "Devletin veya bir şirketin, yatırımcıdan borç almak için çıkardığı, belirli bir vadede anaparayı ve genelde düzenli faiz ödemesini içeren borçlanma senedidir.",
+    "ornek": "Devlet, yatırımcılardan borç almak için 2 yıl vadeli tahvil ihraç etti."
+  },
+  {
+    "terim": "Bono",
+    "aciklama": "Tahvile benzer ama vadesi daha kısa (genelde 1 yıldan az) olan bir borçlanma senedidir.",
+    "ornek": "Şirket, kısa vadeli nakit ihtiyacını karşılamak için 6 ay vadeli bono çıkardı."
+  },
+  {
+    "terim": "Halka Arz",
+    "aciklama": "Bir şirketin hisselerinin ilk kez halka, yani geniş bir yatırımcı kitlesine satılıp borsada işlem görmeye başlamasıdır.",
+    "ornek": "Şirket büyümek için ihtiyaç duyduğu sermayeyi toplamak amacıyla halka arz yaptı ve borsaya kote oldu."
+  },
+  {
+    "terim": "Portföy",
+    "aciklama": "Bir yatırımcının veya kurumun sahip olduğu tüm hisse senedi, tahvil, döviz gibi finansal varlıkların toplamıdır.",
+    "ornek": "Yatırımcı riskini azaltmak için portföyünü hisse senedi, altın ve tahvil arasında dağıttı."
+  },
+  {
+    "terim": "VİOP (Vadeli İşlem ve Opsiyon Piyasası)",
+    "aciklama": "Borsa İstanbul bünyesinde, bir varlığın ileri bir tarihteki fiyatı üzerine anlaşma yapılarak alım-satım yapılan piyasadır. Riskten korunma veya kâr amacıyla kullanılır.",
+    "ornek": "Yatırımcı, dolar kurunun yükseleceğini düşünerek VİOP'ta vadeli dolar sözleşmesi aldı."
+  },
+  {
+    "terim": "Kaldıraç",
+    "aciklama": "Yatırımcının kendi sermayesinden daha büyük tutarlı işlem yapabilmesini sağlayan, borç kullanımına dayalı bir yöntemdir. Kazancı büyütebileceği gibi kaybı da büyütür.",
+    "ornek": "1000 TL sermayeyle 10 kat kaldıraç kullanan yatırımcı, piyasada 10.000 TL'lik işlem yapabilir."
+  },
+  {
+    "terim": "Nakit Akışı",
+    "aciklama": "Bir işletmeye belirli bir dönemde giren ve çıkan paranın toplamıdır. Kâr eden bir şirketin bile nakit akışı sorunlu olabilir, çünkü kâr ile elde nakit bulunması aynı şey değildir.",
+    "ornek": "Şirket kâr gösteriyor ama alacaklarını tahsil edemediği için nakit akışında sıkıntı yaşıyor."
+  },
+  {
+    "terim": "Bilanço",
+    "aciklama": "Bir işletmenin belirli bir tarihteki mali durumunu gösteren tablodur; şirketin sahip olduğu varlıkları (aktif) ve bunların nasıl finanse edildiğini (borç + özkaynak) gösterir.",
+    "ornek": "Şirketin bilançosuna bakıldığında, varlıklarının büyük kısmının banka kredisiyle finanse edildiği görülüyor."
+  },
+  {
+    "terim": "Aktif",
+    "aciklama": "Bilançoda, bir işletmenin sahip olduğu tüm varlıkları ifade eder — nakit, alacaklar, stoklar, binalar, makineler gibi.",
+    "ornek": "Şirketin aktifleri arasında en büyük kalem, deposundaki stoklardır."
+  },
+  {
+    "terim": "Pasif",
+    "aciklama": "Bilançoda, bir işletmenin varlıklarını nasıl finanse ettiğini gösterir — yani borçları ve özkaynaklarının (ortakların koyduğu sermaye + birikmiş kârlar) toplamıdır.",
+    "ornek": "Şirketin pasifinde, bankaya olan kredi borcu önemli bir yer tutuyor."
+  },
+  {
+    "terim": "Özkaynak",
+    "aciklama": "Bir işletmenin varlıklarından tüm borçları çıkardıktan sonra kalan, ortaklara ait olan kısımdır.",
+    "ornek": "Şirketin toplam varlığı 1 milyon TL, borcu 400 bin TL ise, özkaynağı 600 bin TL'dir."
+  },
+  {
+    "terim": "Amortisman",
+    "aciklama": "Bir işletmenin sahip olduğu makine, bina gibi uzun ömürlü varlıkların değerinin, kullanım süresi boyunca giderek azaltılıp muhasebe kayıtlarına gider olarak yansıtılmasıdır.",
+    "ornek": "Şirket, 100.000 TL'ye aldığı makineyi 10 yıla yayarak her yıl 10.000 TL amortisman gideri kaydediyor."
+  },
+  {
+    "terim": "Brüt Kâr",
+    "aciklama": "Bir işletmenin satış gelirinden, sadece satılan malın/hizmetin maliyeti düşüldükten sonra kalan tutardır. Kira, personel gibi diğer giderler henüz düşülmemiştir.",
+    "ornek": "Şirket ürünü 100 TL'ye satıp 60 TL'ye üretiyorsa, brüt kârı 40 TL'dir."
+  },
+  {
+    "terim": "Net Kâr",
+    "aciklama": "Bir işletmenin tüm gelirlerinden, tüm giderlerin (maliyet, kira, personel, vergi, faiz vb.) düşülmesinden sonra kalan nihai kârdır.",
+    "ornek": "Şirketin tüm giderleri ve vergisi düşüldükten sonra elinde kalan net kârı 15.000 TL oldu."
+  },
+  {
+    "terim": "KDV (Katma Değer Vergisi)",
+    "aciklama": "Mal ve hizmet alım satımında, satış fiyatı üzerine eklenen ve nihayetinde tüketicinin ödediği bir dolaylı vergidir. İşletmeler bu vergiyi tahsil edip devlete öderler.",
+    "ornek": "1000 TL'lik bir ürüne %20 KDV eklendiğinde, müşteri toplam 1200 TL öder."
+  },
+  {
+    "terim": "Stopaj",
+    "aciklama": "Bir ödeme yapılırken, ödemeyi yapan tarafından kaynağında kesilip doğrudan devlete aktarılan vergidir. Örneğin maaş öderken işveren gelir vergisini keser.",
+    "ornek": "Banka, mevduat faizinden belirli bir oranda stopaj keserek geri kalanını hesaba yatırır."
+  },
+  {
+    "terim": "Vade Farkı",
+    "aciklama": "Bir ödemenin, belirlenen tarihten sonra yapılması durumunda, gecikilen süre için ek olarak talep edilen tutardır.",
+    "ornek": "Faturasını zamanında ödemeyen müşteriden, gecikme süresine göre hesaplanan vade farkı talep edildi."
+  },
+  {
+    "terim": "Cari Hesap",
+    "aciklama": "Bir işletmenin, düzenli iş yaptığı bir müşteri veya tedarikçiyle olan alacak-borç ilişkisinin takip edildiği hesaptır.",
+    "ornek": "Firma, tedarikçisiyle olan alışverişlerini her seferinde nakit ödemek yerine cari hesap üzerinden takip ediyor."
+  },
+  {
+    "terim": "Erken Kapatma (Kredi)",
+    "aciklama": "Bir kredinin, belirlenen vadeden önce, kalan borcun tamamının ödenerek kapatılmasıdır. Bankalar bazı durumlarda bunun için ek bir ücret (erken kapatma cezası) talep edebilir.",
+    "ornek": "Kredisini vadesinden 1 yıl önce kapatmak isteyen müşteriden banka, kalan anaparanın belirli bir yüzdesi kadar erken kapatma ücreti talep etti."
+  },
+  {
+    "terim": "Gecikme Faizi",
+    "aciklama": "Bir borcun, ödenmesi gereken tarihte ödenmemesi durumunda, gecikilen süre için borca ek olarak işletilen faizdir.",
+    "ornek": "Kredi kartı borcunu zamanında ödemeyen müşterinin borcuna, ödemediği günler için gecikme faizi işletildi."
+  },
+  {
+    "terim": "Asgari Ödeme Tutarı",
+    "aciklama": "Kredi kartı borcunun tamamını ödeyemeyen kullanıcının, hesabının kapatılmaması için ödemesi gereken en düşük tutardır. Kalan borca faiz işlemeye devam eder.",
+    "ornek": "Kredi kartı ekstresinde 5000 TL borç olsa da, kart sahibi sadece asgari ödeme tutarı olan 500 TL'yi ödeyerek hesabını aktif tutabilir."
+  },
+  {
+    "terim": "Teminat",
+    "aciklama": "Bir borcun geri ödenmesini garanti altına almak için borç verene gösterilen değerli bir varlık veya kefaliktir.",
+    "ornek": "Banka, kredi karşılığında müşterinin evini ipotek olarak teminat gösterdi."
+  }
+]

@@ -1,0 +1,11 @@
+.env
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.DS_Store
+data/ornek_kredi_sozlesmesi.pdf
+.idea/
+.vscode/
+node_modules/

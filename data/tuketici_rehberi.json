@@ -1,0 +1,77 @@
+[
+  {
+    "baslik": "Sadece asgari ödeme yaparsam ne olur?",
+    "kategori": "Kredi kartı",
+    "icerik": "Asgari tutar, o ay yasal takibe düşmemek için tabandır; borcu bitirmez. Kalan bakiye faizlenir, çoğu zaman KKDF ve BSMV de biner. Birkaç ay sadece asgari yatırmak borcu şişirir, limit doluluk oranını yüksek tutar ve kredi notunu zedeler. Mümkünse dönem borcunun tamamını, yetmiyorsa asgarinin epey üstünü yatırın. Nakit avans bakiyesi varsa onu önce kapatın; faizi alışverişten pahalıdır."
+  },
+  {
+    "baslik": "Nakit avans neden alışverişten pahalı?",
+    "kategori": "Kredi kartı",
+    "icerik": "Nakit avansta üç katman vardır: çekim anında komisyon, işlem anından itibaren (çoğu bankada) işleyen yüksek faiz, üzerine yasal kesintiler. Market alışverişinde faiz genelde hesap kesiminden sonra, ödemezseniz başlar. Avans ise 'nakit kredi' gibi fiyatlanır. ATM'den kartla nakit, ihtiyaç kredisinden neredeyse her zaman pahalıdır."
+  },
+  {
+    "baslik": "Kredi notum neden düşer, nasıl toparlanır?",
+    "kategori": "Kredi notu",
+    "icerik": "Gecikme kaydı, yüksek limit doluluk, sık yeni başvuru ve kapanmamış icra notu düşürür. Toparlamak için: ödemeleri son günden önce yapın, kart bakiyesini limitin yarısının altına çekin, kapatmadığınız eski kartları rastgele iptal etmeyin (kredi geçmişi kısalabilir), aynı anda beş bankaya başvurmayın. Düzeltme aylar alır; 'silme hizmeti' vaatleri çoğu zaman dolandırıcılıktır."
+  },
+  {
+    "baslik": "Sözleşmede ilk nereye bakmalıyım?",
+    "kategori": "Sözleşme",
+    "icerik": "Sırayla şunları bulun: akdi faiz, gecikme faizi, yıllık maliyet oranı, tahsis ve diğer ücretler, erken kapama / tazminat, muacceliyet (tüm borcun istenmesi), teminat ve kefil, sigorta, cayma hakkı, tebligat adresi. Sözlü 'bizde ceza yok' cümlesi, yazılı maddeyi ezmez. Kartta ayrıca aidat, nakit avans, hesap kesim ve itiraz süresine bakın."
+  },
+  {
+    "baslik": "KKDF ve BSMV'yi kim alıyor?",
+    "kategori": "Vergi",
+    "icerik": "İkisi de bankanın ekstra kârı değil, yasal kesintidir; kamu hesabına gider. Tüketici kredisi ve kart faizinin üstüne biner, taksiti/ekstreyi yükseltir. Banka bunları 'indirim' diye kaldıramaz. Karşılaştırma yaparken sadece 'aylık faiz'e değil, YMO'ya bakın; kesintiler orada görünür."
+  },
+  {
+    "baslik": "Erken kapamada ne kadar öderim?",
+    "kategori": "Kredi",
+    "icerik": "Tipik hesap: kalan anapara + işleyen faiz + varsa erken ödeme tazminatı + tapu/rehin fekki gibi işlemler. Tazminat tüketici kredisinde yasal tavanla sınırlıdır; oranı sözleşmede arayın. Bankadan 'kapatma simülasyonu' isteyin, sözlü rakama güvenmeyin. Aynı gün hem para yatırıp hem fek yaptırmazsanız ipotek kaydı tapuda kalabilir."
+  },
+  {
+    "baslik": "KMH nedir, karttan farkı ne?",
+    "kategori": "KMH",
+    "icerik": "KMH, vadesiz hesabın eksiye düşebilmesidir. Kart ekstreniz ayrı, KMH ayrı üründür. Fatura talimatı, çek veya düzenli ödeme hesabı eksiye çekebilir; faiz gün gün işler. Kullanmıyorsanız limiti sıfırlatın. 'Hesabımda para yoktu ama işlem geçti' çoğu zaman KMH'dir."
+  },
+  {
+    "baslik": "Sabit faizli kredi, piyasa düşünce ucuzlar mı?",
+    "kategori": "Faiz",
+    "icerik": "Hayır, otomatik ucuzlamaz. Sabit faiz sizi artışa karşı kilitler, düşüşten de yararlandırmaz. Piyasa düşünce yapılandırma veya yeni kredi ile kapatma konuşulur; bu kez erken kapama tazminatı çıkabilir. Değişken faizli üründe ise gösterge (TÜFE, TLREF) düşünce taksit inebilir, tersi de doğrudur."
+  },
+  {
+    "baslik": "Kefil olmak kredi çekmekle aynı şey mi?",
+    "kategori": "Teminat",
+    "icerik": "Müteselsil kefilde riske yakın şeylerdir: ödemezse banka size gelir, sizin notunuz ve maaşınız etkilenir. 'Sadece kâğıt' değildir. Eş, kardeş, iş ortağı için imza atmadan hangi borç, hangi süre, hangi limit olduğunu okuyun. Kefaletten çıkmak asıl borçlu ve bankanın onayına bağlıdır; tek taraflı vazgeçmek genelde mümkün değildir."
+  },
+  {
+    "baslik": "Limitim neden birden düştü veya kartım kapandı?",
+    "kategori": "Kredi kartı",
+    "icerik": "Sözleşmeler bankaya risk görünce limit kesme ve kart kapatma hakkı verir. Gecikme, yüksek doluluk, düzensiz gelir sinyali veya genel politika yeter. Harcama ortasında provizyon da limiti geçici yer. Kalıcı kesildiyse bankayı arayıp gerekçeyi sorun; otomatik limit artışını kapatmak ileride sürprizi azaltır."
+  },
+  {
+    "baslik": "Cayma hakkı krediyi ücretsiz iptal mi eder?",
+    "kategori": "Tüketici hakkı",
+    "icerik": "Tüketici kredisinde kısa süreli cayma vardır: cezai şart beklemeyin ama kullandığınız anaparayı ve işleyen faizi geri verirsiniz. 14 gün gibi süreler ürüne göre değişir, maddeye bakın. Parayı harcadıysanız 'hiç olmamış gibi' kapanmaz. Kart aidatı veya sigorta primi iadesi ayrı kurala tabidir."
+  },
+  {
+    "baslik": "Yıllık maliyet oranı (YMO) neden faizden yüksek?",
+    "kategori": "Faiz",
+    "icerik": "Akdi faiz sadece borçlanma oranıdır. YMO; tahsis ücreti, sigorta, ekspertiz, vergi ve kesintileri yıla çevirir. İki krediyi 'aylık faiz düşük olan' diye seçmek yanıltır. Tabelada düşük faiz, peşin masrafla pahalı ürün olabilir. Karşılaştırma belgesinde YMO satırını isteyin."
+  },
+  {
+    "baslik": "İcra gelirse asgari ödeme işe yarar mı?",
+    "kategori": "Hukuk",
+    "icerik": "Hayır. İcra dosyası asgari kart ödemesiyle kapanmaz. Asıl alacak, işlemiş faiz, icra masrafı ve vekâlet ücreti birikir. Avukat veya banka ile yapılandırma / peşin indirim konuşun; 'bir asgari daha yatırayım' dosyayı durdurmaz. Tebligatı yok saymak süreleri kaçırmaktır."
+  },
+  {
+    "baslik": "Konut kredisinde tapu ipoteği ne anlama gelir?",
+    "kategori": "Konut kredisi",
+    "icerik": "Ev sizin adınıza olsa da bankanın üzerinde hakkı vardır. Satış, ikinci rehin veya devir banka onayı ister. Borcu bitirmek ipoteği kendiliğinden silmez; fek (kaldırma) tapuda ayrı işlenir. Ödeyemezseniz banka satışı yoluna gidebilir; satış bedeli borcu karşılamazsa açık kalanı yine sizden ister."
+  },
+  {
+    "baslik": "Ekstre kesim tarihi ile son ödeme neden farklı?",
+    "kategori": "Kredi kartı",
+    "icerik": "Kesim, dönemin kapanıp borcun yazıldığı gündür. Son ödeme, o borcu yatırmanız gereken gündür. Arada genelde 10 gün civarı olur. Kesimden sonra yaptığınız harcama o ayın son ödemesine yetişmez, sonraki ekstrene kalır. Otomatik ödemeyi son ödeme gününe kurun, kesim gününe değil."
+  }
+]
