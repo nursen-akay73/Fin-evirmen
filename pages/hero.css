@@ -375,6 +375,77 @@
   pointer-events: none;
 }
 
+.hero-drift {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.hero-drift-item {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+  will-change: transform;
+  color: rgba(255, 183, 77, 0.16);
+}
+
+.hero-drift-inner {
+  display: block;
+  animation: hero-drift-float var(--dur, 14s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+.hero-drift-item.is-glyph .hero-drift-inner {
+  font-family: "Iowan Old Style", Palatino, Georgia, serif;
+  font-size: clamp(1.4rem, 2.4vw, 2.1rem);
+  line-height: 1;
+  opacity: 0.14;
+  color: rgba(255, 183, 77, 0.85);
+}
+
+.hero-drift-item.is-receipt .hero-drift-inner,
+.hero-drift-item.is-invoice .hero-drift-inner {
+  width: 38px;
+  height: 50px;
+  opacity: 0.13;
+  border: 1px solid rgba(255, 183, 77, 0.45);
+  border-radius: 3px 3px 10px 10px;
+  background:
+    linear-gradient(180deg, rgba(255, 183, 77, 0.12), rgba(255, 255, 255, 0.04)),
+    repeating-linear-gradient(
+      180deg,
+      transparent 0 7px,
+      rgba(255, 183, 77, 0.22) 7px 8px
+    );
+  box-shadow: 0 8px 18px rgba(7, 11, 22, 0.18);
+}
+
+.hero-drift-item.is-invoice .hero-drift-inner {
+  width: 46px;
+  height: 34px;
+  border-radius: 4px;
+  opacity: 0.11;
+  background:
+    linear-gradient(90deg, rgba(26, 46, 91, 0.35), rgba(255, 183, 77, 0.1)),
+    repeating-linear-gradient(
+      180deg,
+      transparent 0 6px,
+      rgba(246, 243, 236, 0.12) 6px 7px
+    );
+}
+
+@keyframes hero-drift-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-4deg);
+  }
+  50% {
+    transform: translate3d(6px, -8px, 0) rotate(3deg);
+  }
+}
+
 .hero-glyph {
   position: absolute;
   font: 500 0.62rem/1 "Avenir Next", "Segoe UI", sans-serif;
@@ -937,6 +1008,7 @@
   .hero-atmosphere,
   .hero-particle,
   .hero-glyph,
+  .hero-drift-inner,
   .hero-noise,
   .logo-glow,
   .logo-core img,

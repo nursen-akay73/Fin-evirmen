@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gelir paylaşımı — FinÇevirmen</title>
+    <link rel="stylesheet" href="/style.css?v=story3" />
+    <link rel="stylesheet" href="/revenue-engine.css?v=re1" />
+    <link rel="stylesheet" href="/inner-field.css?v=field9" />
+  </head>
+  <body class="inner-body">
+    <header class="inner-nav">
+      <a href="/" data-transition class="inner-brand">FinÇevirmen</a>
+      <nav>
+        <a href="/nasil-calisir" data-transition>Nasıl çalışır</a>
+        <a href="/bilgi" data-transition>Bilgi tabanı</a>
+        <a href="/dashboard/revenue-splits" data-transition aria-current="page">Gelir paylaşımı</a>
+      </nav>
+    </header>
+
+    <div class="page revenue-page">
+      <section class="card">
+        <p class="eyebrow">Smart Revenue Engine</p>
+        <h2>Proje hakedişleri</h2>
+        <p class="hint">
+          Projeyi yazın veya mikrofona anlatın. Paydaş, oran ve tutar metinden
+          okunup dağılım otomatik doldurulur.
+        </p>
+      </section>
+
+      <div id="revenue-brief"></div>
+
+      <div class="revenue-grid">
+        <div id="revenue-overview"></div>
+        <div id="revenue-form"></div>
+      </div>
+      <div id="revenue-payout"></div>
+    </div>
+
+    <script src="/vendor/gsap.min.js"></script>
+    <script src="/inner-field.js?v=field9"></script>
+    <script src="/motion.js?v=story3" defer></script>
+    <script src="/revenue-engine.js?v=re4" defer></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        if (!window.RevenueEngine) {
+          return;
+        }
+        window.RevenueEngine.mountAll({
+          brief: document.getElementById("revenue-brief"),
+          overview: document.getElementById("revenue-overview"),
+          form: document.getElementById("revenue-form"),
+          payout: document.getElementById("revenue-payout"),
+        });
+      });
+    </script>
+  </body>
+</html>

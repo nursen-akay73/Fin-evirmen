@@ -14,10 +14,31 @@
     veil.className = "page-veil";
     veil.setAttribute("aria-hidden", "true");
     veil.innerHTML =
-      '<div class="page-veil-panel page-veil-gold"></div>' +
-      '<div class="page-veil-panel page-veil-navy"></div>';
+      '<div class="page-veil-panel page-veil-gold">' +
+      '<canvas class="page-veil-icons" data-veil-tone="gold" aria-hidden="true"></canvas>' +
+      "</div>" +
+      '<div class="page-veil-panel page-veil-navy">' +
+      '<canvas class="page-veil-icons" data-veil-tone="navy" aria-hidden="true"></canvas>' +
+      "</div>";
     document.body.appendChild(veil);
     return veil;
+  }
+
+  function startVeilIcons(veil) {
+    if (!window.InnerField || !window.InnerField.attachVeil) {
+      return;
+    }
+    veil.querySelectorAll(".page-veil-icons").forEach(function (canvas) {
+      window.InnerField.attachVeil(canvas, canvas.getAttribute("data-veil-tone") !== "gold");
+    });
+  }
+
+  function stopVeilIcons(veil) {
+    veil.querySelectorAll(".page-veil-icons").forEach(function (canvas) {
+      if (canvas._stopVeil) {
+        canvas._stopVeil();
+      }
+    });
   }
 
   function splitWords(element) {
@@ -85,15 +106,18 @@
       if (window.gsap) {
         window.gsap.set([gold, navy], { yPercent: -101 });
       }
+      stopVeilIcons(veil);
       veil.classList.add("is-idle");
       playStory();
       return;
     }
 
+    startVeilIcons(veil);
     window.gsap.set([gold, navy], { yPercent: 0 });
     window.gsap
       .timeline({
         onComplete: function () {
+          stopVeilIcons(veil);
           veil.classList.add("is-idle");
           playStory();
         },
@@ -112,6 +136,7 @@
     veil.classList.remove("is-idle");
     var gold = veil.querySelector(".page-veil-gold");
     var navy = veil.querySelector(".page-veil-navy");
+    startVeilIcons(veil);
     window.gsap.set([gold, navy], { yPercent: 101 });
     window.gsap
       .timeline({

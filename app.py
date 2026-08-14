@@ -15,10 +15,13 @@ from rag.llm_client import (
 from rag.retrieval import retrieve_chunks
 from rag.store import count_chunks, insert_chunks
 
+from modules.revenue_engine.api import revenue_bp
+
 PAGES_DIR = Path(__file__).resolve().parent / "pages"
 MAX_CONTRACT_CHUNKS = 12
 
 app = Flask(__name__, static_folder=str(PAGES_DIR), static_url_path="")
+app.register_blueprint(revenue_bp)
 
 
 @app.get("/")
@@ -38,6 +41,13 @@ def knowledge_page():
 @app.get("/nasil-calisir")
 def how_page():
     response = send_from_directory(PAGES_DIR, "how.html")
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@app.get("/dashboard/revenue-splits")
+def revenue_splits_page():
+    response = send_from_directory(PAGES_DIR, "revenue-splits.html")
     response.headers["Cache-Control"] = "no-store"
     return response
 

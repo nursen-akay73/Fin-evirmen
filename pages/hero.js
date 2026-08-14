@@ -138,6 +138,103 @@
   }
 
 
+  class HeroDriftField {
+    constructor(root, options) {
+      this.root = root;
+      this.reducedMotion = options.reducedMotion;
+      this.mobile = options.mobile;
+      this.mouseEnabled = options.mouseEnabled;
+      this.items = [];
+      this.layer = null;
+      this.build();
+    }
+
+    shapes() {
+      const count = this.reducedMotion ? 0 : this.mobile ? 4 : 9;
+      const catalog = [
+        { kind: "glyph", text: "₺", x: 8, y: 14, depth: 0.35, dur: 11 },
+        { kind: "receipt", x: 86, y: 18, depth: 0.7, dur: 14 },
+        { kind: "glyph", text: "$", x: 92, y: 62, depth: 0.45, dur: 13 },
+        { kind: "invoice", x: 6, y: 68, depth: 0.85, dur: 16 },
+        { kind: "glyph", text: "€", x: 78, y: 82, depth: 0.4, dur: 12 },
+        { kind: "receipt", x: 18, y: 88, depth: 0.6, dur: 15 },
+        { kind: "invoice", x: 94, y: 38, depth: 0.95, dur: 17 },
+        { kind: "glyph", text: "%", x: 4, y: 42, depth: 0.5, dur: 10 },
+        { kind: "receipt", x: 72, y: 8, depth: 0.3, dur: 18 },
+      ];
+      return catalog.slice(0, count);
+    }
+
+    build() {
+      if (this.layer) {
+        this.layer.remove();
+      }
+      this.layer = document.createElement("div");
+      this.layer.className = "hero-drift";
+      this.layer.setAttribute("data-layer", "drift");
+      this.layer.setAttribute("aria-hidden", "true");
+      this.root.appendChild(this.layer);
+      this.items = this.shapes().map((shape, index) => {
+        const el = document.createElement("span");
+        el.className = `hero-drift-item is-${shape.kind}`;
+        el.style.left = `${shape.x}%`;
+        el.style.top = `${shape.y}%`;
+        el.style.setProperty("--dur", `${shape.dur}s`);
+        el.style.setProperty("--delay", `${index * -1.4}s`);
+        const inner = document.createElement("span");
+        inner.className = "hero-drift-inner";
+        if (shape.kind === "glyph") {
+          inner.textContent = shape.text;
+        }
+        el.appendChild(inner);
+        this.layer.appendChild(el);
+        return {
+          el,
+          x: shape.x,
+          y: shape.y,
+          depth: shape.depth,
+          mx: 0,
+          my: 0,
+        };
+      });
+    }
+
+    update(pointer, bounds, scrollY, mouseOn) {
+      if (!this.items.length) {
+        return;
+      }
+      const width = bounds.width || 1;
+      const height = bounds.height || 1;
+      const radius = Math.min(200, width * 0.22);
+      this.items.forEach((item) => {
+        const px = (item.x / 100) * width;
+        const py = (item.y / 100) * height;
+        let targetX = 0;
+        let targetY = 0;
+        if (mouseOn && pointer.active) {
+          const dx = px - pointer.x;
+          const dy = py - pointer.y;
+          const dist = Math.hypot(dx, dy) || 1;
+          if (dist < radius) {
+            const force = Math.pow(1 - dist / radius, 2) * 22 * item.depth;
+            targetX = (dx / dist) * force;
+            targetY = (dy / dist) * force;
+          }
+        }
+        item.mx += (targetX - item.mx) * 0.06;
+        item.my += (targetY - item.my) * 0.06;
+        const sy = scrollY * item.depth * 0.12;
+        const sx = scrollY * item.depth * -0.03;
+        item.el.style.transform =
+          "translate3d(" +
+          (item.mx + sx).toFixed(2) +
+          "px," +
+          (item.my + sy).toFixed(2) +
+          "px,0)";
+      });
+    }
+  }
+
   class CurrencyNode {
     constructor(currency, stageSize, reducedMotion) {
       this.currency = currency;
@@ -366,13 +463,20 @@
       this.mobile = window.matchMedia("(max-width: 900px)").matches;
       this.finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
       this.pointer = { x: 0, y: 0 };
+      this.pointerPx = { x: 0, y: 0, active: false };
       this.smooth = { x: 0, y: 0 };
       this.lightPos = { x: 0, y: 0, o: 0 };
       this.lightTarget = { x: 0, y: 0, o: 0 };
       this.logoLock = false;
+      this.scrollY = 0;
       this.background = new FintechBackground(this.bgEl, {
         particleCount: this.particleCount(),
         glyphCount: this.glyphCount(),
+      });
+      this.drift = new HeroDriftField(this.bgEl, {
+        reducedMotion: this.reducedMotion,
+        mobile: this.mobile,
+        mouseEnabled: this.finePointer && !this.mobile && !this.reducedMotion,
       });
       this.orbit = new CurrencyOrbit(this.stage, {
         reducedMotion: this.reducedMotion,
@@ -449,6 +553,9 @@
           const rect = this.root.getBoundingClientRect();
           this.pointer.x = (event.clientX - rect.left) / rect.width - 0.5;
           this.pointer.y = (event.clientY - rect.top) / rect.height - 0.5;
+          this.pointerPx.x = event.clientX - rect.left;
+          this.pointerPx.y = event.clientY - rect.top;
+          this.pointerPx.active = true;
           this.lightTarget.x = event.clientX - rect.left;
           this.lightTarget.y = event.clientY - rect.top;
           this.lightTarget.o = 1;
@@ -456,6 +563,7 @@
         this.root.addEventListener("pointerleave", () => {
           this.pointer.x = 0;
           this.pointer.y = 0;
+          this.pointerPx.active = false;
           this.lightTarget.o = 0;
         });
       }
@@ -474,6 +582,7 @@
     onScroll() {
       const max = Math.max(this.root.offsetHeight * 0.7, 1);
       const progress = Math.min(1, window.scrollY / max);
+      this.scrollY = window.scrollY;
       this.root.style.setProperty("--orbit-expand", String(1 + progress * 0.28));
       this.root.style.setProperty("--logo-scale", String(1 - progress * 0.12));
       this.root.style.setProperty("--line-opacity", String(0.55 - progress * 0.35));
@@ -501,6 +610,16 @@
       this.background.setParallax(x, y);
       this.orbit.setNodeParallax(x, y);
       this.orbit.lines.draw(time, this.reducedMotion);
+      if (this.drift) {
+        const mouseOn =
+          this.finePointer && !this.mobile && !this.reducedMotion;
+        this.drift.update(
+          this.pointerPx,
+          { width: this.root.clientWidth, height: this.root.clientHeight },
+          this.scrollY,
+          mouseOn
+        );
+      }
 
       if (this.light && this.finePointer && !this.mobile) {
         this.lightPos.x = lerp(this.lightPos.x, this.lightTarget.x, LIGHT_EASE);

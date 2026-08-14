@@ -1,0 +1,84 @@
+/* Full-viewport field for inner pages. Hero is not included. */
+
+html:has(.has-inner-field:not(.story-page)),
+.has-inner-field:not(.story-page) {
+  background: #cbb9a0;
+}
+
+html:has(.has-inner-field-dark),
+.has-inner-field-dark {
+  background: #05070e;
+}
+
+.story-page.has-inner-field-dark {
+  background: transparent;
+}
+
+.has-inner-field:not(.story-page),
+.inner-body.has-inner-field {
+  background: transparent;
+}
+
+.has-inner-field .inner-field-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none !important;
+}
+
+.has-inner-field .inner-field-icons {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none !important;
+}
+
+.has-inner-field .inner-field-trail {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none !important;
+  mix-blend-mode: screen;
+}
+
+.has-inner-field .inner-nav,
+.has-inner-field .card,
+.has-inner-field .re-card,
+.has-inner-field .story {
+  position: relative;
+  z-index: 2;
+}
+
+.has-inner-field:not(.story-page) .inner-nav {
+  background: rgba(244, 239, 228, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.has-inner-field .card,
+.has-inner-field .re-card {
+  background: #fffdf8;
+  box-shadow: 0 18px 48px rgba(28, 42, 34, 0.12);
+}
+
+.has-inner-field .kb-grid form {
+  background: #fff;
+}
+
+.page-veil-icons {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
