@@ -42,7 +42,7 @@ html:has(.has-inner-field-dark),
 .has-inner-field .inner-field-trail {
   position: fixed;
   inset: 0;
-  z-index: 3;
+  z-index: 1;
   width: 100%;
   height: 100%;
   display: block;
@@ -55,7 +55,13 @@ html:has(.has-inner-field-dark),
 .has-inner-field .re-card,
 .has-inner-field .story {
   position: relative;
-  z-index: 2;
+  z-index: 4;
+}
+
+.has-inner-field .mic-button,
+.has-inner-field .speak-button {
+  z-index: 5;
+  pointer-events: auto;
 }
 
 .has-inner-field:not(.story-page) .inner-nav {

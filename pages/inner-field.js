@@ -185,6 +185,7 @@
     var canvas = document.createElement("canvas");
     canvas.className = className;
     canvas.setAttribute("aria-hidden", "true");
+    canvas.style.pointerEvents = "none";
     body.insertBefore(canvas, body.firstChild);
     return {
       el: canvas,

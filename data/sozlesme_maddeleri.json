@@ -4,139 +4,199 @@
     "kategori": "Kredi sözleşmesi",
     "madde_dili": "Borçlunun taksitlerinden bir veya birkaçını vadesinde ödememesi halinde kalan tüm borç muaccel olur ve Banka teminatlara başvurabilir.",
     "sade_anlam": "Bir-iki taksiti kaçırınca banka sadece o taksitleri değil, kredinin kalanının tamamını hemen isteyebilir. Ev, araç veya kefil de devreye girebilir.",
-    "dikkat": "Kaç taksit gecikince bu kapının açıldığını sayıyla arayın. 'Bir taksit yeter' ile 'iki taksit üst üste' çok farklı risktir."
+    "dikkat": "Kaç taksit gecikince bu kapının açıldığını sayıyla arayın. 'Bir taksit yeter' ile 'iki taksit üst üste' çok farklı risktir.",
+    "regulation_source": "BDDK",
+    "last_updated_date": "2024-06-01",
+    "regulation_reference": "6502 sayılı TKHK"
   },
   {
     "baslik": "Erken ödeme / erken kapama",
     "kategori": "Kredi sözleşmesi",
     "madde_dili": "Borçlu krediyi vadesinden önce kısmen veya tamamen kapatırsa Banka kalan anapara üzerinden erken ödeme tazminatı almaya yetkilidir.",
     "sade_anlam": "Krediyi erken bitirmek serbesttir ama banka 'kaçırdığı faiz' için bir bedel kesebilir. Tüketici kredilerinde bu bedelin yasal tavanı vardır; ticari kredide tavan sözleşme metnine bakar.",
-    "dikkat": "Yüzdeyi maddede bulun. Yazmıyorsa veya 'bankanın tarife'ye bırakılmışsa imzadan önce netleştirin."
+    "dikkat": "Yüzdeyi maddede bulun. Yazmıyorsa veya 'bankanın tarife'ye bırakılmışsa imzadan önce netleştirin.",
+    "regulation_source": "BDDK",
+    "last_updated_date": "2024-06-01",
+    "regulation_reference": "6502 sayılı TKHK m.37"
   },
   {
     "baslik": "Temerrüt ve gecikme faizi",
     "kategori": "Kredi ve kart",
     "madde_dili": "Vadesinde ödenmeyen tutarlara akdi faiz yerine temerrüt faizi uygulanır. Temerrüt halinde Banka yasal takibe geçebilir.",
     "sade_anlam": "Geç kalınca daha yüksek faiz işler. Üstüne icra, avukatlık ücreti ve not düşüşü gelebilir. Kartta gecikme faizi ile alışveriş faizi ayrı kalemlerdir.",
-    "dikkat": "Akdi faiz, gecikme faizi ve nakit avans faizini üç ayrı satır gibi okuyun. Tek 'faiz' diye geçmeyin."
+    "dikkat": "Akdi faiz, gecikme faizi ve nakit avans faizini üç ayrı satır gibi okuyun. Tek 'faiz' diye geçmeyin.",
+    "regulation_source": "BDDK",
+    "last_updated_date": "2024-06-01",
+    "regulation_reference": "BDDK Banka Kartları ve Kredi Kartları Hakkında Yönetmelik"
   },
   {
     "baslik": "Faiz ve ücret değişikliği",
     "kategori": "Kart ve rotatif",
     "madde_dili": "Banka, mevzuat ve piyasa koşullarına göre faiz, ücret ve komisyonları değiştirebilir. Değişiklik müşteriye bildirilir; kullanılmaya devam kredi/kart kabul sayılır.",
     "sade_anlam": "Kart ve KMH gibi ürünlerde oran ileride artabilir. 'Sessizce kullanmaya devam' çoğu sözleşmede onay yerine geçer. Beğenmezseniz ürünü kapatma yolunu sorun.",
-    "dikkat": "Sabit faizli ihtiyaç/konut kredisinde bu madde daha dar yorumlanır. Hangi ürün olduğunu ayırın."
+    "dikkat": "Sabit faizli ihtiyaç/konut kredisinde bu madde daha dar yorumlanır. Hangi ürün olduğunu ayırın.",
+    "regulation_source": "TCMB",
+    "last_updated_date": "2024-06-01",
+    "regulation_reference": null
   },
   {
     "baslik": "Teminatın paraya çevrilmesi",
     "kategori": "Teminat",
     "madde_dili": "Banka, borcun ödenmemesi halinde ipotek, rehin ve diğer teminatları yasal yollarla paraya çevirmeye yetkilidir. Satış bedeli borca mahsup edilir; açık kalan tutar talep edilir.",
     "sade_anlam": "Ev veya araç satılsa bile borç kapanmayabilir. Eksik kalanı yine sizden isterler. Fazla çıkarsa (nadiren) iade konusu olur.",
-    "dikkat": "Teminat 'borcu unutturmaz'. Değer düşerse açık hesap size kalır."
+    "dikkat": "Teminat 'borcu unutturmaz'. Değer düşerse açık hesap size kalır.",
+    "regulation_source": "Banka Sözleşmesi",
+    "last_updated_date": "2024-06-01",
+    "regulation_reference": null
   },
   {
     "baslik": "Kefilin sorumluluğu",
     "kategori": "Teminat",
     "madde_dili": "Kefil, asıl borçlu ile birlikte borcun tamamından müteselsilen sorumludur. Banka, asıl borçluya başvurmadan kefile müracaat edebilir.",
     "sade_anlam": "Müteselsil kefilseniz banka sizi asıl borçlu gibi takip edebilir. 'Önce onu bulsunlar' beklentisi çoğu sözleşmede yoktur.",
-    "dikkat": "Kefalet limiti, süre ve hangi borçları kapsadığı yazmıyorsa neredeyse açık çek vermişsiniz."
+    "dikkat": "Kefalet limiti, süre ve hangi borçları kapsadığı yazmıyorsa neredeyse açık çek vermişsiniz.",
+    "regulation_source": "BDDK",
+    "last_updated_date": "2024-06-01",
+    "regulation_reference": "6098 sayılı TBK"
   },
   {
     "baslik": "Kart aidatı ve ücretler",
     "kategori": "Kredi kartı",
     "madde_dili": "Kart hamili, Bankanın ilan ettiği kart ücreti, nakit avans ücreti ve diğer hizmet bedellerini ödemeyi kabul eder.",
     "sade_anlam": "Kartı cüzdanınızda taşısanız bile aidat çıkabilir. Nakit avans hem komisyon hem yüksek faizdir. Ücretsiz kart vaadi sözleşmede yoksa sözlü vaat zayıftır.",
-    "dikkat": "Bilgilendirme formu ile sözleşmeyi karşılaştırın. Formda aidat, sözleşmede 'tarifeye göre' varsa sorun."
+    "dikkat": "Bilgilendirme formu ile sözleşmeyi karşılaştırın. Formda aidat, sözleşmede 'tarifeye göre' varsa sorun.",
+    "regulation_source": "Banka Sözleşmesi",
+    "last_updated_date": "2024-06-01",
+    "regulation_reference": null
   },
   {
     "baslik": "Limitin tek taraflı değiştirilmesi",
     "kategori": "Kredi kartı",
     "madde_dili": "Banka, kart limitini artırmaya veya risk gördüğünde azaltmaya / kartı kullanıma kapatmaya yetkilidir.",
     "sade_anlam": "Limit hediye gibi artabilir; risk görünce de kesilebilir. Artan limit, harcamazsanız bile notunuzda 'kullanılabilir borç' gibi durur. Düşük limit ani nakit sıkışıklığı yaratır.",
-    "dikkat": "İstemediğiniz limit artışını yazılı reddedin. Otomatik artış talimatını kapatın."
+    "dikkat": "İstemediğiniz limit artışını yazılı reddedin. Otomatik artış talimatını kapatın.",
+    "regulation_source": "Banka Sözleşmesi",
+    "last_updated_date": "2024-06-01",
+    "regulation_reference": null
   },
   {
     "baslik": "Sigorta yaptırma yükümlülüğü",
     "kategori": "Kredi",
     "madde_dili": "Borçlu, Bankanın uygun göreceği şirketlerden dain-i mürtehin banka olacak şekilde hayat / ferdi kaza / konut sigortası yaptırmayı kabul eder. Yaptırmazsa Banka primini borçluya yansıtarak poliçe düzenleyebilir.",
     "sade_anlam": "Krediye bağlı sigorta, bankanın alacağını korur. Siz ödemeseniz banka yaptırıp primi size yazabilir. Poliçeyi hangi şirketten alabileceğiniz tüketici kuralına tabidir.",
-    "dikkat": "Zorunlu mu, prim ne kadar, peşin mi taksitli mi bakın. 'İndirim' diye satılan paket krediyi pahalılaştırabilir."
+    "dikkat": "Zorunlu mu, prim ne kadar, peşin mi taksitli mi bakın. 'İndirim' diye satılan paket krediyi pahalılaştırabilir.",
+    "regulation_source": "Banka Sözleşmesi",
+    "last_updated_date": "2024-06-01",
+    "regulation_reference": null
   },
   {
     "baslik": "Masrafların yansıtılması",
     "kategori": "Masraf",
     "madde_dili": "Noter, tapu, ekspertiz, ipotek, muhabir ve yasal takip giderleri Borçluya aittir.",
     "sade_anlam": "Faiz dışında bir yığın işlem faturası size kesilebilir. Tüketici kredisinde alınabilecek ücretler sınırlıdır; 'her şey müşteriye' cümlesi her kalemi meşru kılmaz.",
-    "dikkat": "Peşin ödenecek kalemlerin listesini imzadan önce isteyin. Sürpriz ekspertiz+ipotek toplamı taksiti unutturur."
+    "dikkat": "Peşin ödenecek kalemlerin listesini imzadan önce isteyin. Sürpriz ekspertiz+ipotek toplamı taksiti unutturur.",
+    "regulation_source": "Banka Sözleşmesi",
+    "last_updated_date": "2024-06-01",
+    "regulation_reference": null
   },
   {
     "baslik": "Tebligat",
     "kategori": "Usul",
     "madde_dili": "Borçlunun bildirdiği adrese yapılan tebligat, fiilen ulaşmasa da yapılmış sayılır. Adres değişikliği yazılı bildirilmedikçe Banka eski adrese tebligata devam eder.",
     "sade_anlam": "Taşındığınızı söylemezseniz icra kâğıdı eski eve gider, sizin haberiniz yokken süre işler.",
-    "dikkat": "Adres, e-posta ve telefon güncellemesini yazılı/kanaldan yapın. 'Banka zaten biliyor' yetmez."
+    "dikkat": "Adres, e-posta ve telefon güncellemesini yazılı/kanaldan yapın. 'Banka zaten biliyor' yetmez.",
+    "regulation_source": "Banka Sözleşmesi",
+    "last_updated_date": "2024-06-01",
+    "regulation_reference": null
   },
   {
     "baslik": "Yetkili mahkeme ve icra dairesi",
     "kategori": "Usul",
     "madde_dili": "Uyuşmazlıklarda Bankanın merkezinin bulunduğu yer mahkemeleri ve icra daireleri yetkilidir.",
     "sade_anlam": "Dava veya icra, sizin oturduğunuz ilde değil bankanın yazdığı ilde açılabilir. Tüketici işlemlerinde bu kayıt her zaman geçerli olmayabilir ama pratikte sizi zorlar.",
-    "dikkat": "Tüketiciyseniz hakem heyeti / tüketici mahkemesi yolunu ayrıca sorun. Ticari müşteriyseniz bu madde daha bağlayıcıdır."
+    "dikkat": "Tüketiciyseniz hakem heyeti / tüketici mahkemesi yolunu ayrıca sorun. Ticari müşteriyseniz bu madde daha bağlayıcıdır.",
+    "regulation_source": "Banka Sözleşmesi",
+    "last_updated_date": "2024-06-01",
+    "regulation_reference": null
   },
   {
     "baslik": "Hesap kesimi ve itiraz süresi",
     "kategori": "Kredi kartı",
     "madde_dili": "Hesap özetine, tebliğinden itibaren belirli süre içinde itiraz edilmezse içerdiği işlemler kabul edilmiş sayılır.",
     "sade_anlam": "Ekstreye sessiz kalmak 'evet, bu harcama benim' demektir. Tanımadığınız işlemi süre içinde bildirin.",
-    "dikkat": "Süre 10 gün mü 1 ay mı maddede bakın. Ekstreyi e-postada çöpe atmayın."
+    "dikkat": "Süre 10 gün mü 1 ay mı maddede bakın. Ekstreyi e-postada çöpe atmayın.",
+    "regulation_source": "Banka Sözleşmesi",
+    "last_updated_date": "2024-06-01",
+    "regulation_reference": null
   },
   {
     "baslik": "Cayma hakkı",
     "kategori": "Tüketici hakkı",
     "madde_dili": "Tüketici, sözleşmenin kurulmasını izleyen 14 gün içinde herhangi bir gerekçe göstermeksizin ve cezai şart ödemeksizin sözleşmeden cayabilir. Kullanılan anapara ve işleyen faiz iade edilir.",
     "sade_anlam": "Tüketici kredisinde kısa bir 'vazgeçme penceresi' vardır. Parayı harcadıysanız anaparayı geri verirsiniz; ceza beklemeyin ama faiz işleyebilir.",
-    "dikkat": "Süreyi kaçırmayın. Caymayı yazılı/kanaldan belgele yin. Kart ürününde cayma kapsamı kredi kadar geniş olmayabilir."
+    "dikkat": "Süreyi kaçırmayın. Caymayı yazılı/kanaldan belgele yin. Kart ürününde cayma kapsamı kredi kadar geniş olmayabilir.",
+    "regulation_source": "Banka Sözleşmesi",
+    "last_updated_date": "2024-06-01",
+    "regulation_reference": null
   },
   {
     "baslik": "KMH / eksi bakiye faizi",
     "kategori": "KMH",
     "madde_dili": "Hesabın borç bakiyeye dönmesi halinde Bankanın ilan ettiği KMH faizi, komisyon ve vergiler günlük bakiye üzerinden tahakkuk eder.",
     "sade_anlam": "Hesabınız eksiye düşünce fark etmeden faiz işler. Kart ekstre faiziyle karıştırmayın; bu ayrı bir üründür.",
-    "dikkat": "Otomatik fatura talimatı KMH'yi sessizce doldurur. Limitinizi bilin veya kapatın."
+    "dikkat": "Otomatik fatura talimatı KMH'yi sessizce doldurur. Limitinizi bilin veya kapatın.",
+    "regulation_source": "Banka Sözleşmesi",
+    "last_updated_date": "2024-06-01",
+    "regulation_reference": null
   },
   {
     "baslik": "Takas ve mahsup",
     "kategori": "Hesap",
     "madde_dili": "Banka, müşterinin her türlü alacak, mevduat ve haklarını, müşterinin Bankaya olan borçlarına takas ve mahsup etmeye yetkilidir.",
     "sade_anlam": "Maaşınız veya vadeli hesabınız, kart/kredi borcuna banka tarafından kesilebilir. 'O para ayrı hesapta' sizi her zaman korumaz.",
-    "dikkat": "Maaşın yattığı banka ile kredi bankası aynıysa bu madde daha somut çalışır."
+    "dikkat": "Maaşın yattığı banka ile kredi bankası aynıysa bu madde daha somut çalışır.",
+    "regulation_source": "Banka Sözleşmesi",
+    "last_updated_date": "2024-06-01",
+    "regulation_reference": null
   },
   {
     "baslik": "Sözleşme değişikliği",
     "kategori": "Usul",
     "madde_dili": "Banka sözleşme hükümlerini değiştirebilir. Değişiklik bildirilir; ürünün kullanılmaya devamı kabul anlamına gelir. Kabul etmeyen müşteri ürünü kapatır.",
     "sade_anlam": "Kart ve dijital bankacılıkta kurallar sonradan kayabilir. SMS/e-posta ile gelen 'şartlar değişti' metnini yok saymayın.",
-    "dikkat": "Kapatırken aidat, bakiye ve otomatik talimat kalmasın. Kapatma talebini belgeleyin."
+    "dikkat": "Kapatırken aidat, bakiye ve otomatik talimat kalmasın. Kapatma talebini belgeleyin.",
+    "regulation_source": "Banka Sözleşmesi",
+    "last_updated_date": "2024-06-01",
+    "regulation_reference": null
   },
   {
     "baslik": "Kişisel verilerin işlenmesi",
     "kategori": "KVKK",
     "madde_dili": "Müşteri, kimlik, iletişim, hesap ve işlem verilerinin kredi tahsisi, risk, pazarlama ve yasal yükümlülükler için işlenmesini ve grup şirketleri / iş ortaklarıyla paylaşılmasını kabul eder.",
     "sade_anlam": "Başvuru sadece 'para almak' değildir; veriniz skor, pazarlama ve kayıt için kullanılır. Pazarlama izni ile zorunlu kredi paylaşımı ayrı şeylerdir.",
-    "dikkat": "Ticari ileti iznini ayrı kutu olarak arayın. Zorunlu alanla pazarlama kutusunu aynı anda işaretlemeyin."
+    "dikkat": "Ticari ileti iznini ayrı kutu olarak arayın. Zorunlu alanla pazarlama kutusunu aynı anda işaretlemeyin.",
+    "regulation_source": "Banka Sözleşmesi",
+    "last_updated_date": "2024-06-01",
+    "regulation_reference": null
   },
   {
     "baslik": "Dain-i mürtehin kaydı",
     "kategori": "Sigorta",
     "madde_dili": "Sigorta poliçesinde Banka dain-i mürtehin (rehinli alacaklı) olarak yer alır. Tazminat önce Bankanın alacağına mahsup edilir.",
     "sade_anlam": "Ev yanarsa veya hayat teminatı işlerse para önce bankaya gider, kalan kredi kapanır. Size 'hasar bedelinin tamamı' yatmayabilir.",
-    "dikkat": "Poliçe kime ödüyor bakın. Eksik teminat kalırsa açık borç yine sizde kalır."
+    "dikkat": "Poliçe kime ödüyor bakın. Eksik teminat kalırsa açık borç yine sizde kalır.",
+    "regulation_source": "Banka Sözleşmesi",
+    "last_updated_date": "2024-06-01",
+    "regulation_reference": null
   },
   {
     "baslik": "Kredi tahsis şartlarının değişmesi",
     "kategori": "Kredi",
     "madde_dili": "Banka, kullandırım öncesinde gelir, teminat ve belge şartlarını yeniden değerlendirebilir; uygun görmezse krediyi kullandırmama hakkını saklı tutar.",
     "sade_anlam": "Onay SMS'i gelmesi paranın yatacağı anlamına gelmez. Ekspertiz düşük çıkarsa veya belgeler eksikse banka vazgeçebilir. Peşin masraflar tartışmalı kalabilir.",
-    "dikkat": "Tapu, araç veya başka masrafa girmeden kullandırım teyidini alın."
+    "dikkat": "Tapu, araç veya başka masrafa girmeden kullandırım teyidini alın.",
+    "regulation_source": "Banka Sözleşmesi",
+    "last_updated_date": "2024-06-01",
+    "regulation_reference": null
   }
 ]

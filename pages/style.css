@@ -317,9 +317,46 @@ a:focus-visible {
   background: var(--card-accent, var(--accent));
 }
 
+.insight-card.is-attention {
+  border-color: rgba(138, 47, 47, 0.28);
+}
+
 .insight-card.is-speaking {
   transform: translateY(-1px);
   box-shadow: 0 12px 28px rgba(26, 46, 91, 0.14);
+}
+
+.compliance-tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.compliance-tag.is-standard {
+  background: #e7efe8;
+  color: var(--accent-dark);
+}
+
+.compliance-tag.is-attention {
+  background: #f8e4e4;
+  color: var(--danger);
+}
+
+.freshness-note {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fff7e8;
+  color: #6b4e16;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 0.82rem;
 }
 
 .insight-index {

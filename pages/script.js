@@ -46,25 +46,50 @@ function stripMarkdown(text) {
 
 function splitTitleBody(block, index) {
   const cleaned = String(block || "").trim();
+  let title = "";
+  let body = cleaned;
   const titled = cleaned.match(/^\*\*(.+?)\*\*\s*[:：.\-–—]?\s*([\s\S]*)$/);
   if (titled && titled[1].trim()) {
-    return { title: titled[1].trim(), body: titled[2].trim() };
+    title = titled[1].trim();
+    body = titled[2].trim();
+  } else {
+    const lines = cleaned.split(/\n/);
+    const first = (lines[0] || "").replace(/^\*\*|\*\*$/g, "").trim();
+    if (lines.length > 1 && first.length && first.length < 72) {
+      title = first;
+      body = lines.slice(1).join("\n").trim();
+    } else {
+      title = index === 0 ? "Açıklama" : `Madde ${index + 1}`;
+      body = cleaned;
+    }
   }
-  const lines = cleaned.split(/\n/);
-  const first = (lines[0] || "").replace(/^\*\*|\*\*$/g, "").trim();
-  if (lines.length > 1 && first.length && first.length < 72) {
-    return { title: first, body: lines.slice(1).join("\n").trim() };
+  let compliance = "";
+  const tag = title.match(/\[(Dikkat|Standart)\]/i) || body.match(/^\[(Dikkat|Standart)\]\s*/i);
+  if (tag) {
+    compliance = tag[1].charAt(0).toUpperCase() + tag[1].slice(1).toLowerCase();
+    title = title.replace(/\s*\[(Dikkat|Standart)\]\s*/gi, " ").trim();
+    body = body.replace(/^\[(Dikkat|Standart)\]\s*/i, "").trim();
+  }
+  return { title, body, compliance };
+}
+
+function splitFreshness(answer) {
+  const text = String(answer || "").trim();
+  const match = text.match(/\n+(Bu bilgi .+ itibarıyla günceldir[^\n]*)$/);
+  if (!match) {
+    return { body: text, note: "" };
   }
   return {
-    title: index === 0 ? "Açıklama" : `Madde ${index + 1}`,
-    body: cleaned,
+    body: text.slice(0, match.index).trim(),
+    note: match[1].trim(),
   };
 }
 
 function parseInsightCards(answer) {
-  const text = String(answer || "").trim();
+  const split = splitFreshness(answer);
+  const text = split.body;
   if (!text) {
-    return [];
+    return { cards: [], note: split.note };
   }
   const numbered = text
     .split(/(?=^\s*\d+[.)]\s+)/m)
@@ -74,18 +99,24 @@ function parseInsightCards(answer) {
     numbered.length >= 2 ||
     (numbered.length === 1 && /^\d+[.)]\s+/.test(numbered[0]));
   if (looksNumbered) {
-    return numbered.map((block, index) =>
-      splitTitleBody(block.replace(/^\d+[.)]\s+/, ""), index)
-    );
+    return {
+      cards: numbered.map((block, index) =>
+        splitTitleBody(block.replace(/^\d+[.)]\s+/, ""), index)
+      ),
+      note: split.note,
+    };
   }
   const boldBlocks = text
     .split(/(?=^\s*\*\*[^*]+\*\*)/m)
     .map((piece) => piece.trim())
     .filter(Boolean);
   if (boldBlocks.length >= 2) {
-    return boldBlocks.map((block, index) => splitTitleBody(block, index));
+    return {
+      cards: boldBlocks.map((block, index) => splitTitleBody(block, index)),
+      note: split.note,
+    };
   }
-  return [splitTitleBody(text, 0)];
+  return { cards: [splitTitleBody(text, 0)], note: split.note };
 }
 
 function appendRichText(target, text) {
@@ -103,12 +134,13 @@ function appendRichText(target, text) {
 }
 
 function renderInsightCards(answer) {
-  const cards = parseInsightCards(answer);
+  const parsed = parseInsightCards(answer);
+  const cards = parsed.cards || [];
   if (!answerEl) {
     return cards;
   }
   answerEl.innerHTML = "";
-  if (!cards.length) {
+  if (!cards.length && !parsed.note) {
     return [];
   }
   const grid = document.createElement("div");
@@ -117,17 +149,37 @@ function renderInsightCards(answer) {
     const article = document.createElement("article");
     article.className = "insight-card";
     article.dataset.tone = String(index % 5);
+    if (card.compliance === "Dikkat") {
+      article.classList.add("is-attention");
+    }
     const indexEl = document.createElement("span");
     indexEl.className = "insight-index";
     indexEl.textContent = String(index + 1).padStart(2, "0");
     const titleEl = document.createElement("h3");
     titleEl.textContent = card.title;
+    if (card.compliance) {
+      const tag = document.createElement("span");
+      tag.className =
+        "compliance-tag" +
+        (card.compliance === "Dikkat" ? " is-attention" : " is-standard");
+      tag.textContent = card.compliance;
+      titleEl.appendChild(document.createTextNode(" "));
+      titleEl.appendChild(tag);
+    }
     const bodyEl = document.createElement("p");
     appendRichText(bodyEl, card.body);
     article.append(indexEl, titleEl, bodyEl);
     grid.appendChild(article);
   });
-  answerEl.appendChild(grid);
+  if (cards.length) {
+    answerEl.appendChild(grid);
+  }
+  if (parsed.note) {
+    const note = document.createElement("p");
+    note.className = "freshness-note";
+    note.textContent = parsed.note;
+    answerEl.appendChild(note);
+  }
   return cards;
 }
 
@@ -135,6 +187,7 @@ const speaker = {
   cards: [],
   voice: null,
   speaking: false,
+  keepAlive: 0,
 };
 
 function pickTurkishVoice() {
@@ -145,6 +198,8 @@ function pickTurkishVoice() {
   return (
     voices.find((voice) => (voice.lang || "").toLowerCase().startsWith("tr")) ||
     voices.find((voice) => /turk|türk/i.test(voice.name || "")) ||
+    voices.find((voice) => (voice.lang || "").toLowerCase().startsWith("en")) ||
+    voices[0] ||
     null
   );
 }
@@ -166,6 +221,7 @@ function clearSpeakingCards() {
 }
 
 function stopSpeaking() {
+  window.clearInterval(speaker.keepAlive);
   if (window.speechSynthesis) {
     window.speechSynthesis.cancel();
   }
@@ -173,14 +229,24 @@ function stopSpeaking() {
   setSpeakUi(false);
 }
 
-function speakCards(startIndex) {
+  function speakCards(startIndex) {
   if (!window.speechSynthesis) {
     return;
   }
   const cards = speaker.cards;
   let index = startIndex || 0;
+  window.clearInterval(speaker.keepAlive);
+  speaker.keepAlive = window.setInterval(() => {
+    if (!window.speechSynthesis.speaking) {
+      window.clearInterval(speaker.keepAlive);
+      return;
+    }
+    window.speechSynthesis.pause();
+    window.speechSynthesis.resume();
+  }, 10000);
   const speakNext = () => {
     if (index >= cards.length) {
+      window.clearInterval(speaker.keepAlive);
       clearSpeakingCards();
       setSpeakUi(false);
       return;
@@ -196,6 +262,7 @@ function speakCards(startIndex) {
     );
     utterance.lang = "tr-TR";
     utterance.rate = 0.95;
+    utterance.pitch = 1;
     if (speaker.voice) {
       utterance.voice = speaker.voice;
     }
@@ -203,10 +270,16 @@ function speakCards(startIndex) {
       index += 1;
       speakNext();
     };
-    utterance.onerror = () => {
+    utterance.onerror = (event) => {
+      const reason = event && event.error;
+      if (reason === "interrupted" || reason === "canceled") {
+        return;
+      }
+      window.clearInterval(speaker.keepAlive);
       clearSpeakingCards();
       setSpeakUi(false);
     };
+    window.speechSynthesis.resume();
     window.speechSynthesis.speak(utterance);
   };
   setSpeakUi(true);
@@ -221,8 +294,10 @@ function toggleSpeaking() {
     stopSpeaking();
     return;
   }
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.resume();
   speaker.voice = pickTurkishVoice() || speaker.voice;
-  speakCards(0);
+  window.setTimeout(() => speakCards(0), 40);
 }
 
 if (window.speechSynthesis) {
@@ -266,7 +341,7 @@ function showAnswer(answer, sources, statusText) {
   statusEl.textContent = statusText;
   statusEl.classList.remove("error");
   speaker.cards = renderInsightCards(answer);
-  answerEl.hidden = !speaker.cards.length;
+  answerEl.hidden = !answerEl.innerHTML.trim();
   if (speakButton) {
     speakButton.hidden = !speaker.cards.length || !window.speechSynthesis;
   }
@@ -306,24 +381,38 @@ function formatSourceLine(sources) {
       pages.push(source.page_number);
     }
   });
+  const primary =
+    sources.find((source) => (source.source_type || source.type) === "terim_sozlugu") ||
+    sources[0];
+  const regulator =
+    primary.regulation_source ||
+    sources.map((item) => item.regulation_source).find(Boolean) ||
+    "";
+  const updatedRaw =
+    primary.last_updated_date ||
+    sources.map((item) => item.last_updated_date).find(Boolean) ||
+    "";
+  const year = String(updatedRaw).slice(0, 4);
+  const updateBit = year ? ` (Güncelleme: ${year})` : "";
+  const reference = primary.regulation_reference
+    ? ` — ${primary.regulation_reference}`
+    : "";
+
   if (pages.length) {
     const pageLabel = pages
       .sort((left, right) => left - right)
       .map((page) => `Sayfa ${page}`)
       .join(", ");
-    return `Kaynak: Sözleşme, ${pageLabel}`;
+    const head = regulator || "Sözleşme";
+    return `Kaynak: ${head} — Sözleşme, ${pageLabel}${updateBit}`;
   }
-  const glossary = sources.find(
-    (source) => (source.source_type || source.type) === "terim_sozlugu"
-  );
-  const primary = glossary || sources[0];
   const name = primary.source_name || primary.name;
   if (!name) {
-    return "";
+    return regulator ? `Kaynak: ${regulator}${updateBit}` : "";
   }
   const type = primary.source_type || primary.type;
-  const label = SOURCE_TYPE_LABELS[type] || "Kaynak";
-  return `Kaynak: ${label} — ${name}`;
+  const label = regulator || SOURCE_TYPE_LABELS[type] || "Kaynak";
+  return `Kaynak: ${label} — ${name}${reference}${updateBit}`;
 }
 
 async function parseJson(response) {
@@ -404,12 +493,10 @@ if (uploadForm) {
 
 function SpeechToText() {
   this.listening = false;
+  this.opening = false;
   this.recognition = null;
   this.media = { stream: null, recorder: null, chunks: [] };
-  this.usingBrowserSpeech = Boolean(
-    window.SpeechRecognition || window.webkitSpeechRecognition
-  );
-  micButton.addEventListener("click", () => this.toggle());
+  micButton.addEventListener("click", (event) => this.toggle(event));
 }
 
 SpeechToText.prototype.setStatus = function (message, isError) {
@@ -443,70 +530,19 @@ SpeechToText.prototype.fillQuestion = function (text) {
   this.setStatus("Metne çevrildi. İsterseniz düzeltip Açıkla’ya basın.");
 };
 
-SpeechToText.prototype.toggle = function () {
+SpeechToText.prototype.toggle = function (event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
   if (this.listening) {
     this.stop();
     return;
   }
-  if (this.usingBrowserSpeech) {
-    this.startBrowserSpeech();
+  if (this.opening) {
     return;
   }
   this.startRecording();
-};
-
-SpeechToText.prototype.startBrowserSpeech = function () {
-  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const recognition = new Recognition();
-  this.recognition = recognition;
-  recognition.lang = "tr-TR";
-  recognition.interimResults = true;
-  recognition.continuous = false;
-  recognition.onstart = () => {
-    this.setListening(true);
-    this.setStatus("Dinleniyor… bitirmek için mikrofona tekrar basın.");
-  };
-  recognition.onresult = (event) => {
-    let finalText = "";
-    let interimText = "";
-    for (let index = 0; index < event.results.length; index += 1) {
-      const piece = event.results[index][0].transcript;
-      if (event.results[index].isFinal) {
-        finalText += piece;
-      } else {
-        interimText += piece;
-      }
-    }
-    if (interimText) {
-      this.setStatus(interimText);
-    }
-    if (finalText) {
-      this.fillQuestion(finalText);
-    }
-  };
-  recognition.onerror = (event) => {
-    if (event.error === "not-allowed") {
-      this.setStatus("Mikrofon izni verilmedi. Tarayıcı ayarından izin verin.", true);
-    } else if (event.error !== "aborted" && event.error !== "no-speech") {
-      this.usingBrowserSpeech = false;
-      this.setStatus("Tarayıcı dinleyemedi, kayıt ile denenecek.");
-      this.startRecording();
-      return;
-    } else if (event.error === "no-speech") {
-      this.setStatus("Ses algılanamadı. Yakın konuşup tekrar deneyin.", true);
-    }
-    this.setListening(false);
-  };
-  recognition.onend = () => {
-    this.setListening(false);
-    this.recognition = null;
-  };
-  try {
-    recognition.start();
-  } catch (error) {
-    this.usingBrowserSpeech = false;
-    this.startRecording();
-  }
 };
 
 SpeechToText.prototype.startRecording = async function () {
@@ -514,8 +550,11 @@ SpeechToText.prototype.startRecording = async function () {
     this.setStatus("Bu tarayıcı mikrofonu desteklemiyor. Chrome deneyin.", true);
     return;
   }
+  this.opening = true;
+  this.setStatus("Tarayıcı mikrofon izni istiyor… adres çubuğundan İzin ver’e basın.");
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    this.opening = false;
     const mimeType = MediaRecorder.isTypeSupported("audio/webm")
       ? "audio/webm"
       : MediaRecorder.isTypeSupported("audio/mp4")
@@ -531,12 +570,21 @@ SpeechToText.prototype.startRecording = async function () {
       }
     };
     recorder.onstop = () => this.sendRecording();
-    recorder.start();
+    recorder.start(250);
     this.setListening(true);
     this.setStatus("Dinleniyor… bitirmek için mikrofona tekrar basın.");
     this.recordTimer = window.setTimeout(() => this.stop(), 20000);
   } catch (error) {
-    this.setStatus("Mikrofona erişilemedi. İzin verip tekrar deneyin.", true);
+    this.opening = false;
+    const denied =
+      error &&
+      (error.name === "NotAllowedError" || error.name === "PermissionDeniedError");
+    this.setStatus(
+      denied
+        ? "Mikrofon izni verilmedi. Adres çubuğundaki kilit simgesinden mikrofona izin verin."
+        : "Mikrofona erişilemedi. İzin verip tekrar deneyin.",
+      true
+    );
     this.setListening(false);
   }
 };

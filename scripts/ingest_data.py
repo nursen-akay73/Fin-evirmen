@@ -44,7 +44,15 @@ def join_aliases(values) -> str:
     return ", ".join(values)
 
 
-def format_term(item: dict) -> tuple[str, str]:
+def item_meta(item: dict, default_source: str) -> tuple:
+    return (
+        item.get("regulation_source") or default_source,
+        item.get("last_updated_date") or None,
+        item.get("regulation_reference") or None,
+    )
+
+
+def format_term(item: dict) -> tuple:
     aliases = join_aliases(item.get("esanlam") or [])
     kategori = item.get("kategori") or "Genel"
     lines = [
@@ -57,10 +65,14 @@ def format_term(item: dict) -> tuple[str, str]:
     lines.append(f"Açıklama: {item['aciklama']}")
     if item.get("ornek"):
         lines.append(f"Örnek: {item['ornek']}")
-    return item["terim"], "\n".join(lines)
+    if item.get("regulation_source"):
+        lines.append(f"Mevzuat kaynağı: {item['regulation_source']}")
+    if item.get("regulation_reference"):
+        lines.append(f"Dayanak: {item['regulation_reference']}")
+    return (item["terim"], "\n".join(lines)) + item_meta(item, "Genel Finansal Terim")
 
 
-def format_clause(item: dict) -> tuple[str, str]:
+def format_clause(item: dict) -> tuple:
     lines = [
         "[Kaynak: sözleşme maddesi rehberi]",
         f"Kategori: {item.get('kategori') or 'Sözleşme'}",
@@ -70,17 +82,21 @@ def format_clause(item: dict) -> tuple[str, str]:
     ]
     if item.get("dikkat"):
         lines.append(f"Dikkat: {item['dikkat']}")
-    return item["baslik"], "\n".join(lines)
+    if item.get("regulation_source"):
+        lines.append(f"Mevzuat kaynağı: {item['regulation_source']}")
+    if item.get("regulation_reference"):
+        lines.append(f"Dayanak: {item['regulation_reference']}")
+    return (item["baslik"], "\n".join(lines)) + item_meta(item, "BDDK")
 
 
-def format_guide(item: dict) -> tuple[str, str]:
+def format_guide(item: dict) -> tuple:
     lines = [
         "[Kaynak: tüketici rehberi]",
         f"Kategori: {item.get('kategori') or 'Rehber'}",
         f"Soru: {item['baslik']}",
         f"Cevap: {item['icerik']}",
     ]
-    return item["baslik"], "\n".join(lines)
+    return (item["baslik"], "\n".join(lines)) + item_meta(item, "Genel Finansal Terim")
 
 
 FORMATTERS = {
@@ -90,7 +106,7 @@ FORMATTERS = {
 }
 
 
-def load_source(spec: dict) -> list[tuple[str, str]]:
+def load_source(spec: dict) -> list[tuple]:
     path = DATA_DIR / spec["file"]
     if not path.exists():
         raise FileNotFoundError(f"Kaynak bulunamadı: {path}")
@@ -103,7 +119,7 @@ def pretty_pdf_name(path: Path) -> str:
     return path.stem.replace("_", " ").replace("-", " ").strip() or path.name
 
 
-def load_reference_pdfs() -> list[tuple[str, str]]:
+def load_reference_pdfs() -> list[tuple]:
     if not PDF_DIR.exists():
         print(f"PDF klasörü yok, atlandı: {PDF_DIR}")
         return []
@@ -135,7 +151,15 @@ def load_reference_pdfs() -> list[tuple[str, str]]:
                                 piece,
                             ]
                         )
-                        rows.append((name, content))
+                        rows.append(
+                            (
+                                name,
+                                content,
+                                "Banka Sözleşmesi",
+                                None,
+                                None,
+                            )
+                        )
                         chunk_count += 1
         except Exception as error:
             print(f"{path.name}: okunamadı ({error})")
@@ -147,23 +171,39 @@ def load_reference_pdfs() -> list[tuple[str, str]]:
     return rows
 
 
-def insert_source(cursor, source_type: str, rows: list[tuple[str, str]], vectors: list[list[float]]):
+def insert_source(cursor, source_type: str, rows: list[tuple], vectors: list[list[float]]):
     cursor.execute(
         "DELETE FROM knowledge_chunks WHERE source_type = %s",
         (source_type,),
     )
-    for (name, content), vector in zip(rows, vectors):
+    for row, vector in zip(rows, vectors):
+        name, content = row[0], row[1]
+        source = row[2] if len(row) > 2 else None
+        updated = row[3] if len(row) > 3 else None
+        reference = row[4] if len(row) > 4 else None
         cursor.execute(
             """
             INSERT INTO knowledge_chunks
-                (source_type, source_name, content, embedding)
-            VALUES (%s, %s, %s, %s::vector)
+                (source_type, source_name, content, embedding,
+                 regulation_source, last_updated_date, regulation_reference)
+            VALUES (%s, %s, %s, %s::vector, %s, %s, %s)
             """,
-            (source_type, name, content, vector_to_literal(vector)),
+            (
+                source_type,
+                name,
+                content,
+                vector_to_literal(vector),
+                source,
+                updated,
+                reference,
+            ),
         )
 
 
 def main():
+    from rag.store import ensure_regulation_columns
+
+    ensure_regulation_columns()
     prepared = []
     for spec in SOURCES:
         rows = load_source(spec)
@@ -174,7 +214,7 @@ def main():
     if pdf_rows:
         prepared.append(("sozlesme_referans", "sozlesme_referans/", pdf_rows))
 
-    all_contents = [content for _, _, rows in prepared for _, content in rows]
+    all_contents = [row[1] for _, _, rows in prepared for row in rows]
     print(f"Toplam {len(all_contents)} parça için yerel embedding üretiliyor...")
     vectors = []
     batch_size = 64

@@ -1,5 +1,7 @@
 import base64
 
+from datetime import date, datetime, timedelta
+
 from groq import Groq
 
 from config import GROQ_API_KEY, LLM_MODEL, LLM_PROVIDER, VISION_MODEL
@@ -22,9 +24,22 @@ CONTRACT_SYSTEM_PROMPT = (
     "Sadece verilen sözleşme metnine ve terim bağlamına dayan. "
     "Metinde olmayan faiz, ceza veya iptal şartı uydurma. "
     "Kritik maddeleri numaralı kartlar halinde, anlaşılır dilde özetle. "
-    "Her madde tam olarak şu biçimde olsun: '1. **Başlık**: açıklama'. "
-    "Başlık kısa ve belirgin olsun (ör. Faiz Oranları, Gecikme ve Ceza)."
+    "Her madde tam olarak şu biçimde olsun: "
+    "'1. **Başlık**: [Standart] açıklama' veya "
+    "'1. **Başlık**: [Dikkat] açıklama'. "
+    "Başlık kısa ve belirgin olsun (ör. Faiz Oranları, Gecikme ve Ceza). "
+    "Tipik veya beklenen bir maddeyse [Standart] yaz. "
+    "Madde piyasa ortalamasının üzerinde bir ceza veya faiz oranı içeriyorsa, "
+    "erken kapama bedeli yüksekse, tek taksitte tüm borcun istenmesi gibi "
+    "ağır bir muacceliyet varsa ya da kullanıcıyı şaşırtabilecek bir şart varsa "
+    "[Dikkat] yaz ve nedenini kısaca açıkla."
 )
+
+FRESHNESS_WARNING = (
+    "Bu bilgi {date} itibarıyla günceldir, güncel mevzuatı "
+    "kontrol etmenizi öneririz."
+)
+STALE_AFTER_DAYS = 365
 
 
 def _require_groq_key():
@@ -35,11 +50,38 @@ def _require_groq_key():
         )
 
 
+def _parse_date(value) -> date | None:
+    if value is None or value == "":
+        return None
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    text = str(value).strip()[:10]
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        return None
+
+
+def freshness_notice(last_updated_dates: list | None) -> str:
+    """Fixed warning when retrieved knowledge is older than STALE_AFTER_DAYS."""
+    parsed = [_parse_date(value) for value in (last_updated_dates or [])]
+    parsed = [value for value in parsed if value]
+    if not parsed:
+        return ""
+    oldest = min(parsed)
+    if date.today() - oldest <= timedelta(days=STALE_AFTER_DAYS):
+        return ""
+    return FRESHNESS_WARNING.format(date=oldest.strftime("%d.%m.%Y"))
+
+
 def generate_answer(
     question: str,
     context_chunks: list[str],
     extra_instructions: str = "",
     system_prompt: str | None = None,
+    last_updated_dates: list | None = None,
 ) -> str:
     """Send retrieved context + user question to the configured LLM provider."""
     if LLM_PROVIDER != "groq":
@@ -63,7 +105,11 @@ def generate_answer(
         ],
         temperature=0.3,
     )
-    return completion.choices[0].message.content or ""
+    answer = completion.choices[0].message.content or ""
+    notice = freshness_notice(last_updated_dates)
+    if notice:
+        answer = answer.rstrip() + "\n\n" + notice
+    return answer
 
 
 WHISPER_MODEL = "whisper-large-v3"

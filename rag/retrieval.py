@@ -2,6 +2,7 @@ import re
 
 from db import get_connection
 from rag.embeddings import embed_text
+from rag.store import ensure_regulation_columns
 
 VECTOR_CANDIDATES = 14
 MAX_PER_SOURCE_TYPE = 4
@@ -9,6 +10,12 @@ QUESTION_TAIL = re.compile(
     r"[\s?!.]*(nedir|ne demek|ne anlama gelir|açıkla|nedir\s*)[\s?!.]*$",
     flags=re.IGNORECASE,
 )
+
+CHUNK_SELECT = """
+    id, source_type, source_name, content,
+    embedding <=> %s::vector AS distance,
+    regulation_source, last_updated_date, regulation_reference
+"""
 
 
 def vector_to_literal(vector: list[float]) -> str:
@@ -22,12 +29,18 @@ def _term_needle(query: str) -> str:
 
 
 def _row_to_chunk(row: tuple) -> dict:
+    updated = row[6]
+    if hasattr(updated, "isoformat"):
+        updated = updated.isoformat()
     return {
         "id": row[0],
         "source_type": row[1],
         "source_name": row[2],
         "content": row[3],
         "distance": float(row[4]) if row[4] is not None else None,
+        "regulation_source": row[5],
+        "last_updated_date": updated,
+        "regulation_reference": row[7],
     }
 
 
@@ -53,14 +66,14 @@ def _diversify(rows: list[tuple], limit: int) -> list[tuple]:
 
 def retrieve_chunks(query: str, limit: int = 8) -> list[dict]:
     """Return the closest knowledge chunks by cosine distance, mixed by source."""
+    ensure_regulation_columns()
     query_vector = vector_to_literal(embed_text(query))
     connection = get_connection()
     try:
         with connection.cursor() as cursor:
             cursor.execute(
-                """
-                SELECT id, source_type, source_name, content,
-                       embedding <=> %s::vector AS distance
+                f"""
+                SELECT {CHUNK_SELECT}
                 FROM knowledge_chunks
                 ORDER BY embedding <=> %s::vector
                 LIMIT %s
@@ -72,9 +85,8 @@ def retrieve_chunks(query: str, limit: int = 8) -> list[dict]:
             needle = _term_needle(query)
             if needle:
                 cursor.execute(
-                    """
-                    SELECT id, source_type, source_name, content,
-                           embedding <=> %s::vector AS distance
+                    f"""
+                    SELECT {CHUNK_SELECT}
                     FROM knowledge_chunks
                     WHERE source_name ILIKE %s
                     ORDER BY

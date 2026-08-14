@@ -25,8 +25,7 @@
     if (!button || !textarea) {
       return;
     }
-    var state = { listening: false, recognition: null, media: null, timer: null };
-    var Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var state = { listening: false, media: null, timer: null, opening: false };
 
     function setListening(on) {
       state.listening = on;
@@ -49,69 +48,36 @@
 
     function stop() {
       window.clearTimeout(state.timer);
-      if (state.recognition) {
-        try {
-          state.recognition.stop();
-        } catch (error) {
-          /* already stopped */
-        }
-        return;
-      }
       if (state.media && state.media.recorder && state.media.recorder.state !== "inactive") {
         state.media.recorder.stop();
       }
       setListening(false);
     }
 
-    function startBrowser() {
-      var recognition = new Speech();
-      state.recognition = recognition;
-      recognition.lang = "tr-TR";
-      recognition.interimResults = true;
-      recognition.continuous = false;
-      recognition.onstart = function () {
-        setListening(true);
-        setStatus(statusEl, "Dinleniyor… bitirmek için mikrofona tekrar basın.");
-        if (statusEl) statusEl.hidden = false;
-      };
-      recognition.onresult = function (event) {
-        var finalText = "";
-        for (var i = 0; i < event.results.length; i += 1) {
-          if (event.results[i].isFinal) {
-            finalText += event.results[i][0].transcript;
-          }
-        }
-        if (finalText) {
-          fill(finalText);
-        }
-      };
-      recognition.onerror = function (event) {
-        if (event.error !== "aborted" && event.error !== "no-speech") {
-          startRecording();
-          return;
-        }
-        setListening(false);
-      };
-      recognition.onend = function () {
-        setListening(false);
-        state.recognition = null;
-      };
-      try {
-        recognition.start();
-      } catch (error) {
-        state.recognition = null;
-        startRecording();
-      }
-    }
-
     function startRecording() {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setStatus(statusEl, "Bu tarayıcı mikrofonu desteklemiyor.", true);
+        setStatus(statusEl, "Bu tarayıcı mikrofonu desteklemiyor. Chrome deneyin.", true);
         if (statusEl) statusEl.hidden = false;
         return;
       }
+      if (state.opening || state.listening) {
+        return;
+      }
+      state.opening = true;
+      setStatus(statusEl, "Tarayıcı mikrofon izni istiyor… adres çubuğundan İzin ver’e basın.");
+      if (statusEl) statusEl.hidden = false;
       navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
-        var recorder = new MediaRecorder(stream);
+        state.opening = false;
+        var mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+          ? "audio/webm;codecs=opus"
+          : MediaRecorder.isTypeSupported("audio/webm")
+            ? "audio/webm"
+            : MediaRecorder.isTypeSupported("audio/mp4")
+              ? "audio/mp4"
+              : "";
+        var recorder = mimeType
+          ? new MediaRecorder(stream, { mimeType: mimeType })
+          : new MediaRecorder(stream);
         var chunks = [];
         state.media = { stream: stream, recorder: recorder, chunks: chunks };
         recorder.ondataavailable = function (event) {
@@ -124,8 +90,9 @@
             track.stop();
           });
           var blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
+          var filename = blob.type.indexOf("mp4") !== -1 ? "speech.m4a" : "speech.webm";
           var body = new FormData();
-          body.append("audio", blob, "speech.webm");
+          body.append("audio", blob, filename);
           setStatus(statusEl, "Ses metne çevriliyor…");
           if (statusEl) statusEl.hidden = false;
           fetch("/api/transcribe", { method: "POST", body: body })
@@ -137,36 +104,34 @@
               setStatus(statusEl, error.message, true);
             });
         };
-        recorder.start();
+        recorder.start(250);
         setListening(true);
         setStatus(statusEl, "Dinleniyor… bitirmek için mikrofona tekrar basın.");
         if (statusEl) statusEl.hidden = false;
         state.timer = window.setTimeout(stop, 20000);
-      }).catch(function () {
-        setStatus(statusEl, "Mikrofona erişilemedi.", true);
+      }).catch(function (error) {
+        state.opening = false;
+        var denied = error && (error.name === "NotAllowedError" || error.name === "PermissionDeniedError");
+        setStatus(
+          statusEl,
+          denied
+            ? "Mikrofon izni verilmedi. Adres çubuğundaki kilit simgesinden mikrofona izin verin."
+            : "Mikrofona erişilemedi. İzin verip tekrar deneyin.",
+          true
+        );
         if (statusEl) statusEl.hidden = false;
+        setListening(false);
       });
     }
 
     button.addEventListener("click", function (event) {
       event.preventDefault();
       event.stopPropagation();
-      if (state.listening) {
-        stop();
-        return;
-      }
-      setStatus(statusEl, "Mikrofon açılıyor…");
-      if (statusEl) {
-        statusEl.hidden = false;
-      }
-      if (Speech) {
-        try {
-          startBrowser();
-          return;
-        } catch (error) {
-          startRecording();
-          return;
+      if (state.listening || state.opening) {
+        if (state.listening) {
+          stop();
         }
+        return;
       }
       startRecording();
     });

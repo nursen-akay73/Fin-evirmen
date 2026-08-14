@@ -1,4 +1,5 @@
 from io import BytesIO
+from datetime import date
 from pathlib import Path
 
 import pdfplumber
@@ -13,7 +14,7 @@ from rag.llm_client import (
     transcribe_audio,
 )
 from rag.retrieval import retrieve_chunks
-from rag.store import count_chunks, insert_chunks
+from rag.store import count_chunks, ensure_regulation_columns, insert_chunks
 
 from modules.revenue_engine.api import revenue_bp
 
@@ -22,6 +23,21 @@ MAX_CONTRACT_CHUNKS = 12
 
 app = Flask(__name__, static_folder=str(PAGES_DIR), static_url_path="")
 app.register_blueprint(revenue_bp)
+try:
+    ensure_regulation_columns()
+except Exception:
+    pass
+
+
+def _chunk_source(chunk: dict) -> dict:
+    return {
+        "source_name": chunk.get("source_name"),
+        "source_type": chunk.get("source_type"),
+        "page_number": chunk.get("page_number"),
+        "regulation_source": chunk.get("regulation_source"),
+        "last_updated_date": chunk.get("last_updated_date"),
+        "regulation_reference": chunk.get("regulation_reference"),
+    }
 
 
 @app.get("/")
@@ -69,16 +85,12 @@ def ask():
                 }
             ), 404
 
-        answer = generate_answer(question, [chunk["content"] for chunk in chunks])
-        sources = [
-            {
-                "source_name": chunk.get("source_name"),
-                "source_type": chunk.get("source_type"),
-                "page_number": chunk.get("page_number"),
-            }
-            for chunk in chunks
-            if chunk.get("source_name")
-        ]
+        answer = generate_answer(
+            question,
+            [chunk["content"] for chunk in chunks],
+            last_updated_dates=[chunk.get("last_updated_date") for chunk in chunks],
+        )
+        sources = [_chunk_source(chunk) for chunk in chunks]
         return jsonify({"answer": answer, "sources": sources})
     except Exception as error:
         return jsonify({"error": f"Sorunuz yanıtlanırken bir hata oluştu: {error}"}), 500
@@ -187,9 +199,12 @@ def upload_contract():
             context,
             extra_instructions=(
                 "Sözleşmede yazmayan hiçbir oran veya ceza uydurma. "
-                "Çıktıyı yalnızca '1. **Başlık**: açıklama' maddeleri olarak yaz."
+                "Çıktıyı yalnızca '1. **Başlık**: [Standart] açıklama' veya "
+                "'1. **Başlık**: [Dikkat] açıklama' maddeleri olarak yaz. "
+                "Yüksek ceza/faiz, ağır muacceliyet veya şaşırtıcı şart için [Dikkat] kullan."
             ),
             system_prompt=CONTRACT_SYSTEM_PROMPT,
+            last_updated_dates=[item.get("last_updated_date") for item in glossary],
         )
         seen_pages = []
         for page_number, _piece in page_chunks:
@@ -200,9 +215,13 @@ def upload_contract():
                 "source_name": "Sözleşme",
                 "source_type": "sozlesme",
                 "page_number": page_number,
+                "regulation_source": "Banka Sözleşmesi",
+                "last_updated_date": None,
+                "regulation_reference": None,
             }
             for page_number in seen_pages
         ]
+        sources.extend(_chunk_source(item) for item in glossary)
         return jsonify(
             {"answer": answer, "filename": uploaded.filename, "sources": sources}
         )
@@ -266,7 +285,12 @@ def add_term():
 
     try:
         content = _format_user_term(terim, aciklama, kategori, ornek)
-        inserted = insert_chunks("kullanici_terim", [(terim, content)])
+        inserted = insert_chunks(
+            "kullanici_terim",
+            [(terim, content)],
+            regulation_source="Kullanıcı kaydı",
+            last_updated_date=date.today(),
+        )
         return jsonify(
             {
                 "ok": True,
@@ -317,7 +341,13 @@ def add_document():
             (f"{uploaded.filename} #{index + 1}", f"[Kaynak: yüklenen belge]\n{chunk}")
             for index, chunk in enumerate(chunks)
         ]
-        inserted = insert_chunks("kullanici_belge", rows, replace_names=True)
+        inserted = insert_chunks(
+            "kullanici_belge",
+            rows,
+            replace_names=True,
+            regulation_source="Kullanıcı belgesi",
+            last_updated_date=date.today(),
+        )
         return jsonify(
             {
                 "ok": True,
@@ -359,7 +389,13 @@ def add_image():
             )
             for index, chunk in enumerate(chunks)
         ]
-        inserted = insert_chunks("kullanici_gorsel", rows, replace_names=True)
+        inserted = insert_chunks(
+            "kullanici_gorsel",
+            rows,
+            replace_names=True,
+            regulation_source="Kullanıcı belgesi",
+            last_updated_date=date.today(),
+        )
         preview = extracted[:400] + ("…" if len(extracted) > 400 else "")
         return jsonify(
             {

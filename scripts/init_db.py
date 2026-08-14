@@ -17,7 +17,10 @@ STATEMENTS = [
         source_name VARCHAR(255),
         content TEXT NOT NULL,
         embedding VECTOR(384),
-        created_at TIMESTAMP DEFAULT NOW()
+        created_at TIMESTAMP DEFAULT NOW(),
+        regulation_source VARCHAR(120),
+        last_updated_date DATE,
+        regulation_reference VARCHAR(255)
     );
     """,
     """
@@ -36,6 +39,12 @@ ON knowledge_chunks
 USING hnsw (embedding vector_cosine_ops);
 """
 
+ALTER_COLUMNS = [
+    "ALTER TABLE knowledge_chunks ADD COLUMN IF NOT EXISTS regulation_source VARCHAR(120);",
+    "ALTER TABLE knowledge_chunks ADD COLUMN IF NOT EXISTS last_updated_date DATE;",
+    "ALTER TABLE knowledge_chunks ADD COLUMN IF NOT EXISTS regulation_reference VARCHAR(255);",
+]
+
 
 def main():
     connection = get_connection()
@@ -45,6 +54,9 @@ def main():
             for statement in STATEMENTS:
                 cursor.execute(statement)
             print("Tablolar oluşturuldu (knowledge_chunks, user_documents).")
+            for statement in ALTER_COLUMNS:
+                cursor.execute(statement)
+            print("RegTech sütunları hazır (regulation_source, last_updated_date, regulation_reference).")
             try:
                 cursor.execute(INDEX_SQL)
                 print("HNSW vektör index'i oluşturuldu.")
