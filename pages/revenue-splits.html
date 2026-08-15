@@ -4,25 +4,32 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gelir paylaşımı — FinÇevirmen</title>
-    <link rel="stylesheet" href="/style.css?v=story3" />
+    <link rel="stylesheet" href="/style.css?v=lang1" />
     <link rel="stylesheet" href="/revenue-engine.css?v=re1" />
     <link rel="stylesheet" href="/inner-field.css?v=field10" />
   </head>
-  <body class="inner-body">
+  <body class="inner-body" data-title-key="doc.title.rev">
     <header class="inner-nav">
       <a href="/" data-transition class="inner-brand">FinÇevirmen</a>
-      <nav>
-        <a href="/nasil-calisir" data-transition>Nasıl çalışır</a>
-        <a href="/bilgi" data-transition>Bilgi tabanı</a>
-        <a href="/dashboard/revenue-splits" data-transition aria-current="page">Gelir paylaşımı</a>
-      </nav>
+      <div class="inner-nav-end">
+        <nav>
+          <a href="/nasil-calisir" data-transition data-i18n="nav.how">Nasıl çalışır</a>
+          <a href="/bilgi" data-transition data-i18n="nav.kb">Bilgi tabanı</a>
+          <a href="/dashboard/revenue-splits" data-transition aria-current="page" data-i18n="nav.rev">Gelir paylaşımı</a>
+        </nav>
+        <button type="button" class="lang-switch" data-lang-switch aria-label="Language" aria-pressed="false">
+          <span class="lang-switch-jelly" aria-hidden="true"></span>
+          <span data-lang-label="tr">TR</span>
+          <span data-lang-label="en">EN</span>
+        </button>
+      </div>
     </header>
 
     <div class="page revenue-page">
       <section class="card">
-        <p class="eyebrow">Smart Revenue Engine</p>
-        <h2>Proje hakedişleri</h2>
-        <p class="hint">
+        <p class="eyebrow" data-i18n="rev.eyebrow">Smart Revenue Engine</p>
+        <h2 data-i18n="rev.title">Proje hakedişleri</h2>
+        <p class="hint" data-i18n="rev.hint">
           Projeyi yazın veya mikrofona anlatın. Paydaş, oran ve tutar metinden
           okunup dağılım otomatik doldurulur.
         </p>
@@ -38,9 +45,10 @@
     </div>
 
     <script src="/vendor/gsap.min.js"></script>
+    <script src="/i18n.js?v=lang2"></script>
     <script src="/inner-field.js?v=field10"></script>
     <script src="/motion.js?v=story3" defer></script>
-    <script src="/revenue-engine.js?v=re5" defer></script>
+    <script src="/revenue-engine.js?v=re6" defer></script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         if (!window.RevenueEngine) {

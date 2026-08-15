@@ -1,0 +1,57 @@
+<header class="site-nav" data-site-nav>
+  <a href="/" class="site-brand" data-transition{% if active == "home" %} aria-current="page"{% endif %}>
+    <img src="/logo.png" alt="" width="36" height="36" />
+    <span>FinÇevirmen</span>
+  </a>
+  <div class="site-nav-end">
+    <nav data-site-tabs>
+      <span class="nav-pill" data-nav-pill aria-hidden="true"></span>
+      <a
+        href="/nasil-calisir"
+        data-transition
+        data-i18n="nav.how"
+        {% if active == "how" %}aria-current="page"{% endif %}
+        >Nasıl çalışır</a
+      >
+      <a
+        href="/karsilastir"
+        data-transition
+        data-i18n="nav.compare"
+        {% if active == "compare" %}aria-current="page"{% endif %}
+        >Karşılaştır</a
+      >
+      <a
+        href="/sozluk"
+        data-transition
+        data-i18n="nav.glossary"
+        {% if active == "glossary" %}aria-current="page"{% endif %}
+        >Sözlük</a
+      >
+      <a
+        href="/bilgi"
+        data-transition
+        data-i18n="nav.kb"
+        {% if active == "kb" %}aria-current="page"{% endif %}
+        >Bilgi tabanı</a
+      >
+    </nav>
+    <button type="button" class="lang-switch" data-lang-switch aria-label="Language" aria-pressed="false">
+      <span class="lang-switch-jelly" aria-hidden="true"></span>
+      <span data-lang-label="tr">TR</span>
+      <span data-lang-label="en">EN</span>
+    </button>
+  </div>
+</header>
+<div class="bg-glyphs" aria-hidden="true">
+  <span class="bg-glyph" data-glyph><span class="bg-glyph-inner">₺</span></span>
+  <span class="bg-glyph" data-glyph><span class="bg-glyph-inner">$</span></span>
+  <span class="bg-glyph" data-glyph><span class="bg-glyph-inner">€</span></span>
+  <span class="bg-glyph" data-glyph><span class="bg-glyph-inner">₺</span></span>
+  <span class="bg-glyph" data-glyph><span class="bg-glyph-inner">$</span></span>
+</div>
+<script src="/vendor/gsap.min.js" defer></script>
+<script src="/vendor/ScrollTrigger.min.js" defer></script>
+<script src="/background-effects.js?v=fx3" defer></script>
+<script src="/animations.js?v=fx7" defer></script>
+<script src="/ui.js?v=ui1" defer></script>
+<script src="/cursor.js?v=fx3" defer></script>

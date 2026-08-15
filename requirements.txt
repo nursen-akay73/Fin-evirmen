@@ -5,3 +5,4 @@ groq
 pdfplumber
 fastembed
 fpdf2
+sentence-transformers

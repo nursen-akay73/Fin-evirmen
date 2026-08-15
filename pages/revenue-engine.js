@@ -93,6 +93,7 @@
           var filename = blob.type.indexOf("mp4") !== -1 ? "speech.m4a" : "speech.webm";
           var body = new FormData();
           body.append("audio", blob, filename);
+          body.append("lang", window.I18N && window.I18N.lang ? window.I18N.lang() : "tr");
           setStatus(statusEl, "Ses metne çevriliyor…");
           if (statusEl) statusEl.hidden = false;
           fetch("/api/transcribe", { method: "POST", body: body })

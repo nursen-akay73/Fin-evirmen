@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {% include "_head.html" %}
+    <title>İki sözleşmeyi karşılaştır — FinÇevirmen</title>
+    <link rel="stylesheet" href="/style.css?v=brand15" />
+    <link rel="stylesheet" href="/hero.css?v=brand10" />
+    <link rel="stylesheet" href="/compare.css?v=cmp3" />
+  </head>
+  <body class="site-body compare-page" data-title-key="doc.title.compare">
+    {% include "_nav.html" %}
+    <div class="fintech-bg compare-bg" data-hero-bg aria-hidden="true">
+      <canvas class="hero-wave" data-hero-wave></canvas>
+      <div class="hero-wave-veil" data-hero-wave-veil></div>
+      <div class="hero-atmosphere" data-layer="atmosphere"></div>
+      <div class="hero-grid" data-layer="grid"></div>
+      <div class="hero-particles" data-layer="particles"></div>
+      <div class="hero-data" data-layer="data"></div>
+      <div class="hero-cursor-light" data-cursor-light></div>
+      <div class="hero-noise" data-layer="noise"></div>
+    </div>
+
+    <main class="compare-shell">
+      <header class="compare-intro">
+        <p class="eyebrow" data-i18n="compare.eyebrow">Yan yana · uydurmaz</p>
+        <h1 data-i18n="compare.title">İki sözleşmeyi karşılaştır</h1>
+        <p class="lede" data-i18n="compare.lede">
+          İki kredi veya kredi kartı PDF’ini yükleyin. Faiz, ceza, asgari ödeme
+          ve iptal şartları belgedeki metne göre yan yana çıkar.
+        </p>
+      </header>
+
+      <section class="compare-arena" aria-label="Sözleşme yükleme">
+        <label class="compare-slot" data-slot="a">
+          <input
+            id="compare-file-a"
+            type="file"
+            accept="application/pdf,.pdf"
+            data-file="a"
+          />
+          <span class="compare-slot-kicker" data-i18n="compare.slotA">Sözleşme A</span>
+          <span class="compare-pdf" aria-hidden="true"></span>
+          <span class="compare-slot-name" data-name="a" data-i18n="compare.drop">
+            PDF sürükleyin veya seçin
+          </span>
+        </label>
+
+        <div class="compare-vs-bar" aria-hidden="true">
+          <span class="compare-vs-line"></span>
+          <span class="compare-vs">VS</span>
+          <span class="compare-vs-line"></span>
+        </div>
+
+        <label class="compare-slot" data-slot="b">
+          <input
+            id="compare-file-b"
+            type="file"
+            accept="application/pdf,.pdf"
+            data-file="b"
+          />
+          <span class="compare-slot-kicker" data-i18n="compare.slotB">Sözleşme B</span>
+          <span class="compare-pdf" aria-hidden="true"></span>
+          <span class="compare-slot-name" data-name="b" data-i18n="compare.drop">
+            PDF sürükleyin veya seçin
+          </span>
+        </label>
+      </section>
+
+      <div class="compare-actions">
+        <p class="privacy-note" data-i18n="contract.privacy">
+          Yüklediğiniz belgeler kalıcı olarak saklanmaz, oturum sonunda silinir.
+        </p>
+        <button type="button" id="compare-run" disabled data-i18n="contract.compare">
+          Karşılaştır
+        </button>
+      </div>
+
+      <section class="compare-result card" id="compare-result" hidden aria-live="polite">
+        <div class="results-head">
+          <h2 data-i18n="results">Sonuç</h2>
+        </div>
+        <p id="compare-status" class="status"></p>
+        <div id="compare-answer" class="answer" hidden></div>
+      </section>
+    </main>
+    {% include "_footer.html" %}
+
+    <script src="/i18n.js?v=brand16"></script>
+    <script src="/hero-wave.js?v=wave1" defer></script>
+    <script src="/compare.js?v=cmp2" defer></script>
+  </body>
+</html>

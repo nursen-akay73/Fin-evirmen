@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {% include "_head.html" %}
+    <title>Sözlük — FinÇevirmen</title>
+    <link rel="stylesheet" href="/style.css?v=brand15" />
+  </head>
+  <body class="site-body inner-body" data-title-key="doc.title.glossary">
+    {% include "_nav.html" %}
+    <div class="page">
+      <section class="card glossary-hero" aria-labelledby="glossary-title">
+        <p class="eyebrow" data-i18n="glossary.eyebrow">Bilgi tabanı</p>
+        <h2 id="glossary-title" data-i18n="glossary.title">Sözlük</h2>
+        <p class="hint" data-i18n="glossary.hint">
+          RAG’in baktığı terimler, maddeler ve rehber metinleri. Kaynağı gör,
+          sonra ana sayfada açıkla.
+        </p>
+        <label class="sr-only" for="glossary-q">Ara</label>
+        <input
+          id="glossary-q"
+          class="glossary-search"
+          type="search"
+          data-i18n-placeholder="glossary.search"
+          placeholder="Terim veya madde ara"
+        />
+        <div class="glossary-filters" role="tablist">
+          <button type="button" data-kind="all" class="is-on" data-i18n="glossary.all">Tümü</button>
+          <button type="button" data-kind="terms" data-i18n="glossary.terms">Terimler</button>
+          <button type="button" data-kind="clauses" data-i18n="glossary.clauses">Maddeler</button>
+          <button type="button" data-kind="guide" data-i18n="glossary.guide">Rehber</button>
+        </div>
+        <p id="glossary-count" class="glossary-count" data-i18n="glossary.loading">Sözlük yükleniyor…</p>
+      </section>
+      <div id="glossary-grid" class="glossary-grid" aria-live="polite"></div>
+    </div>
+    {% include "_footer.html" %}
+    <script src="/i18n.js?v=brand16"></script>
+    <script src="/glossary.js?v=g2"></script>
+  </body>
+</html>

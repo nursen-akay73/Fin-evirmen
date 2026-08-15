@@ -1,3 +1,11 @@
+function currentLang() {
+  return window.I18N && window.I18N.lang ? window.I18N.lang() : "tr";
+}
+
+function t(key, vars) {
+  return window.I18N && window.I18N.t ? window.I18N.t(key, vars) : key;
+}
+
 const askForm = document.getElementById("ask-form");
 const uploadForm = document.getElementById("upload-form");
 const questionInput = document.getElementById("question");
@@ -5,6 +13,13 @@ const fileInput = document.getElementById("pdf-file");
 const fileName = document.getElementById("file-name");
 const askButton = document.getElementById("ask-button");
 const uploadButton = document.getElementById("upload-button");
+const compareButton = document.getElementById("compare-button");
+const contractChat = document.getElementById("contract-chat");
+const contractAskForm = document.getElementById("contract-ask-form");
+const contractQuestion = document.getElementById("contract-question");
+const contractAskButton = document.getElementById("contract-ask-button");
+const contractMicButton = document.getElementById("contract-mic-button");
+const contractMicStatus = document.getElementById("contract-mic-status");
 const micButton = document.getElementById("mic-button");
 const micStatus = document.getElementById("mic-status");
 const statusEl = document.getElementById("status");
@@ -15,11 +30,69 @@ const speakLabel = speakButton
   ? speakButton.querySelector(".speak-label")
   : null;
 
+function bindDropZone(input, options) {
+  if (!input) {
+    return;
+  }
+  const label = input.closest(".file-label");
+  if (!label) {
+    return;
+  }
+  const accept = (options && options.accept) || function () {
+    return true;
+  };
+  const maxFiles = (options && options.maxFiles) || 1;
+  let dragDepth = 0;
+  label.addEventListener("dragenter", (event) => {
+    event.preventDefault();
+    dragDepth += 1;
+    label.classList.add("is-drag");
+  });
+  label.addEventListener("dragover", (event) => {
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = "copy";
+    }
+  });
+  label.addEventListener("dragleave", () => {
+    dragDepth -= 1;
+    if (dragDepth <= 0) {
+      dragDepth = 0;
+      label.classList.remove("is-drag");
+    }
+  });
+  label.addEventListener("drop", (event) => {
+    event.preventDefault();
+    dragDepth = 0;
+    label.classList.remove("is-drag");
+    const dropped = event.dataTransfer && event.dataTransfer.files;
+    if (!dropped || !dropped.length) {
+      return;
+    }
+    const files = Array.from(dropped).filter(accept).slice(0, maxFiles);
+    if (!files.length) {
+      return;
+    }
+    const transfer = new DataTransfer();
+    files.forEach((file) => transfer.items.add(file));
+    input.files = transfer.files;
+    input.dispatchEvent(new Event("change"));
+  });
+}
+
 if (fileInput && fileName) {
   fileInput.addEventListener("change", () => {
-    fileName.textContent = fileInput.files[0]
-      ? fileInput.files[0].name
-      : "PDF seçin";
+    const files = Array.from(fileInput.files || []).slice(0, 3);
+    fileName.textContent = files.length
+      ? files.map((file) => file.name).join(", ")
+      : t("contract.file");
+    if (window.FCUI) {
+      window.FCUI.setFileStatus(document.getElementById("file-status"), files, "picked");
+    }
+  });
+  bindDropZone(fileInput, {
+    maxFiles: 3,
+    accept: (file) => file.type === "application/pdf" || /\.pdf$/i.test(file.name),
   });
 }
 
@@ -28,7 +101,7 @@ function setBusy(button, busy, label) {
   button.classList.toggle("is-loading", busy);
   if (busy) {
     button.innerHTML =
-      '<span class="btn-spinner" aria-hidden="true"></span><span>' +
+      '<span class="btn-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>' +
       label +
       "</span>";
   } else {
@@ -59,23 +132,28 @@ function splitTitleBody(block, index) {
       title = first;
       body = lines.slice(1).join("\n").trim();
     } else {
-      title = index === 0 ? "Açıklama" : `Madde ${index + 1}`;
+      title = index === 0 ? t("card.explain") : t("card.item", { n: index + 1 });
       body = cleaned;
     }
   }
   let compliance = "";
-  const tag = title.match(/\[(Dikkat|Standart)\]/i) || body.match(/^\[(Dikkat|Standart)\]\s*/i);
+  const tag =
+    title.match(/\[(Dikkat|Standart|Attention|Standard)\]/i) ||
+    body.match(/^\[(Dikkat|Standart|Attention|Standard)\]\s*/i);
   if (tag) {
-    compliance = tag[1].charAt(0).toUpperCase() + tag[1].slice(1).toLowerCase();
-    title = title.replace(/\s*\[(Dikkat|Standart)\]\s*/gi, " ").trim();
-    body = body.replace(/^\[(Dikkat|Standart)\]\s*/i, "").trim();
+    const raw = tag[1].toLowerCase();
+    compliance = raw === "dikkat" || raw === "attention" ? "Dikkat" : "Standart";
+    title = title.replace(/\s*\[(Dikkat|Standart|Attention|Standard)\]\s*/gi, " ").trim();
+    body = body.replace(/^\[(Dikkat|Standart|Attention|Standard)\]\s*/i, "").trim();
   }
   return { title, body, compliance };
 }
 
 function splitFreshness(answer) {
   const text = String(answer || "").trim();
-  const match = text.match(/\n+(Bu bilgi .+ itibarıyla günceldir[^\n]*)$/);
+  const match = text.match(
+    /\n+((?:Bu bilgi .+ itibarıyla günceldir|This information is current as of)[^\n]*)$/
+  );
   if (!match) {
     return { body: text, note: "" };
   }
@@ -162,7 +240,8 @@ function renderInsightCards(answer) {
       tag.className =
         "compliance-tag" +
         (card.compliance === "Dikkat" ? " is-attention" : " is-standard");
-      tag.textContent = card.compliance;
+      tag.textContent =
+        card.compliance === "Dikkat" ? t("tag.attention") : t("tag.standard");
       titleEl.appendChild(document.createTextNode(" "));
       titleEl.appendChild(tag);
     }
@@ -190,14 +269,22 @@ const speaker = {
   keepAlive: 0,
 };
 
-function pickTurkishVoice() {
+function pickVoice() {
   if (!window.speechSynthesis) {
     return null;
   }
   const voices = window.speechSynthesis.getVoices();
+  const prefix = currentLang() === "en" ? "en" : "tr";
+  if (prefix === "tr") {
+    return (
+      voices.find((voice) => (voice.lang || "").toLowerCase().startsWith("tr")) ||
+      voices.find((voice) => /turk|türk/i.test(voice.name || "")) ||
+      voices.find((voice) => (voice.lang || "").toLowerCase().startsWith("en")) ||
+      voices[0] ||
+      null
+    );
+  }
   return (
-    voices.find((voice) => (voice.lang || "").toLowerCase().startsWith("tr")) ||
-    voices.find((voice) => /turk|türk/i.test(voice.name || "")) ||
     voices.find((voice) => (voice.lang || "").toLowerCase().startsWith("en")) ||
     voices[0] ||
     null
@@ -211,7 +298,7 @@ function setSpeakUi(speaking) {
   }
   speakButton.classList.toggle("is-speaking", speaking);
   speakButton.setAttribute("aria-pressed", speaking ? "true" : "false");
-  speakLabel.textContent = speaking ? "Durdur" : "Seslendir";
+  speakLabel.textContent = speaking ? t("speak.stop") : t("speak");
 }
 
 function clearSpeakingCards() {
@@ -260,7 +347,7 @@ function stopSpeaking() {
     const utterance = new SpeechSynthesisUtterance(
       [card.title, stripMarkdown(card.body)].filter(Boolean).join(". ")
     );
-    utterance.lang = "tr-TR";
+    utterance.lang = currentLang() === "en" ? "en-US" : "tr-TR";
     utterance.rate = 0.95;
     utterance.pitch = 1;
     if (speaker.voice) {
@@ -296,14 +383,14 @@ function toggleSpeaking() {
   }
   window.speechSynthesis.cancel();
   window.speechSynthesis.resume();
-  speaker.voice = pickTurkishVoice() || speaker.voice;
+  speaker.voice = pickVoice() || speaker.voice;
   window.setTimeout(() => speakCards(0), 40);
 }
 
 if (window.speechSynthesis) {
-  speaker.voice = pickTurkishVoice();
+  speaker.voice = pickVoice();
   window.speechSynthesis.addEventListener("voiceschanged", () => {
-    speaker.voice = pickTurkishVoice() || speaker.voice;
+    speaker.voice = pickVoice() || speaker.voice;
   });
 }
 
@@ -313,6 +400,9 @@ if (speakButton) {
 
 function showError(message) {
   stopSpeaking();
+  if (window.FCUI) {
+    window.FCUI.setResultState(document.querySelector(".results"), "error");
+  }
   if (!statusEl) {
     window.alert(message);
     return;
@@ -342,8 +432,19 @@ function showAnswer(answer, sources, statusText) {
   statusEl.classList.remove("error");
   speaker.cards = renderInsightCards(answer);
   answerEl.hidden = !answerEl.innerHTML.trim();
+  if (!answerEl.hidden && window.FCAnimations && window.FCAnimations.popResults) {
+    window.FCAnimations.popResults(document.querySelector(".results") || answerEl);
+  }
   if (speakButton) {
     speakButton.hidden = !speaker.cards.length || !window.speechSynthesis;
+  }
+  if (window.FCUI) {
+    window.FCUI.setResultState(document.querySelector(".results"), "streaming");
+    window.FCUI.renderCitations(sourcesEl, sources);
+    window.FCUI.streamCards(answerEl, function () {
+      window.FCUI.setResultState(document.querySelector(".results"), "ready");
+    });
+    return;
   }
   if (!sourcesEl) {
     return;
@@ -360,16 +461,18 @@ function showAnswer(answer, sources, statusText) {
   }
 }
 
-const SOURCE_TYPE_LABELS = {
-  terim_sozlugu: "Terim Sözlüğü",
-  sozlesme_maddesi: "Sözleşme maddesi",
-  tuketici_rehberi: "Tüketici rehberi",
-  sozlesme_referans: "Sözleşme referansı",
-  kullanici_terim: "Eklenen terim",
-  kullanici_belge: "Yüklenen belge",
-  kullanici_gorsel: "Yüklenen görüntü",
-  sozlesme: "Sözleşme",
-};
+function sourceTypeLabels() {
+  return {
+    terim_sozlugu: t("src.glossary"),
+    sozlesme_maddesi: t("src.clause"),
+    tuketici_rehberi: t("src.guide"),
+    sozlesme_referans: t("src.ref"),
+    kullanici_terim: t("src.userTerm"),
+    kullanici_belge: t("src.userDoc"),
+    kullanici_gorsel: t("src.userImg"),
+    sozlesme: t("src.contract"),
+  };
+}
 
 function formatSourceLine(sources) {
   if (!sources || !sources.length) {
@@ -393,32 +496,48 @@ function formatSourceLine(sources) {
     sources.map((item) => item.last_updated_date).find(Boolean) ||
     "";
   const year = String(updatedRaw).slice(0, 4);
-  const updateBit = year ? ` (Güncelleme: ${year})` : "";
+  const updateBit = year ? ` (${t("src.update", { year })})` : "";
   const reference = primary.regulation_reference
     ? ` — ${primary.regulation_reference}`
     : "";
 
   if (pages.length) {
+    const bits = [];
+    sources.forEach((source) => {
+      if ((source.source_type || source.type) !== "sozlesme") {
+        return;
+      }
+      const name = source.source_name || t("src.contract");
+      const page = source.page_number
+        ? `${name} — ${t("src.page", { n: source.page_number })}`
+        : name;
+      if (!bits.includes(page)) {
+        bits.push(page);
+      }
+    });
+    if (bits.length) {
+      return `${t("src.prefix")}: ${bits.join("; ")}`;
+    }
     const pageLabel = pages
       .sort((left, right) => left - right)
-      .map((page) => `Sayfa ${page}`)
+      .map((page) => t("src.page", { n: page }))
       .join(", ");
-    const head = regulator || "Sözleşme";
-    return `Kaynak: ${head} — Sözleşme, ${pageLabel}${updateBit}`;
+    const head = regulator || t("src.contract");
+    return `${t("src.prefix")}: ${head} — ${t("src.contract")}, ${pageLabel}${updateBit}`;
   }
   const name = primary.source_name || primary.name;
   if (!name) {
-    return regulator ? `Kaynak: ${regulator}${updateBit}` : "";
+    return regulator ? `${t("src.prefix")}: ${regulator}${updateBit}` : "";
   }
   const type = primary.source_type || primary.type;
-  const label = regulator || SOURCE_TYPE_LABELS[type] || "Kaynak";
-  return `Kaynak: ${label} — ${name}${reference}${updateBit}`;
+  const label = regulator || sourceTypeLabels()[type] || t("src.prefix");
+  return `${t("src.prefix")}: ${label} — ${name}${reference}${updateBit}`;
 }
 
 async function parseJson(response) {
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(data.error || "Beklenmeyen bir hata oluştu.");
+    throw new Error(data.error || t("ask.unexpected"));
   }
   return data;
 }
@@ -428,14 +547,17 @@ if (askForm) {
     event.preventDefault();
     const question = questionInput.value.trim();
     if (!question) {
-      showError("Lütfen bir soru veya metin yazın.");
+      showError(t("ask.empty"));
       return;
     }
 
-    setBusy(askButton, true, "Düşünüyor...");
+    setBusy(askButton, true, t("ask.thinking"));
     if (statusEl) {
-      statusEl.textContent = "Sözlükte ilgili maddeler aranıyor...";
+      statusEl.textContent = t("ask.searching");
       statusEl.classList.remove("error");
+    }
+    if (window.FCUI) {
+      window.FCUI.setResultState(document.querySelector(".results"), "loading");
     }
 
     try {
@@ -443,14 +565,14 @@ if (askForm) {
         await fetch("/api/ask", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question }),
+          body: JSON.stringify({ question, lang: currentLang() }),
         })
       );
-      showAnswer(data.answer, data.sources, "Terim açıklaması hazır.");
+      showAnswer(data.answer, data.sources, t("ask.ready"));
     } catch (error) {
-      showError("Bir hata oluştu, tekrar deneyin.");
+      showError(t("ask.error"));
     } finally {
-      setBusy(askButton, false, "Açıkla");
+      setBusy(askButton, false, t("ask.submit"));
     }
   });
 }
@@ -458,18 +580,26 @@ if (askForm) {
 if (uploadForm) {
   uploadForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const file = fileInput.files[0];
-    if (!file) {
-      showError("Lütfen bir PDF dosyası seçin.");
+    const files = Array.from(fileInput.files || []).slice(0, 3);
+    if (!files.length) {
+      showError(t("contract.nofile"));
       return;
+    }
+    if ((fileInput.files || []).length > 3) {
+      showError(t("contract.tooMany"));
     }
 
     const body = new FormData();
-    body.append("file", file);
-    setBusy(uploadButton, true, "Özetleniyor...");
+    files.forEach((file) => body.append("file", file));
+    body.append("lang", currentLang());
+    setBusy(uploadButton, true, t("contract.busy"));
     if (statusEl) {
-      statusEl.textContent = "Sözleşme metni çıkarılıyor ve özetleniyor...";
+      statusEl.textContent = t("contract.extracting");
       statusEl.classList.remove("error");
+    }
+    if (window.FCUI) {
+      window.FCUI.setResultState(document.querySelector(".results"), "loading");
+      window.FCUI.setFileStatus(document.getElementById("file-status"), files, "busy");
     }
 
     try {
@@ -479,55 +609,189 @@ if (uploadForm) {
           body,
         })
       );
-      const label = data.filename
-        ? `${data.filename} özetlendi.`
-        : "Sözleşme özeti hazır.";
+      const names = data.filenames || (data.filename ? [data.filename] : []);
+      const label = names.length
+        ? t("contract.named", { name: names.join(", ") })
+        : t("contract.ready");
       showAnswer(data.answer, data.sources, label);
+      if (window.FCUI) {
+        window.FCUI.setFileStatus(document.getElementById("file-status"), files, "ready");
+      }
+      if (compareButton) {
+        compareButton.hidden = names.length < 2;
+      }
+      if (contractChat) {
+        contractChat.hidden = false;
+      }
     } catch (error) {
-      showError("Bir hata oluştu, tekrar deneyin.");
+      showError(error.message || t("ask.error"));
+      if (window.FCUI) {
+        window.FCUI.setFileStatus(document.getElementById("file-status"), files, "picked");
+      }
     } finally {
-      setBusy(uploadButton, false, "Özetle");
+      setBusy(uploadButton, false, t("contract.submit"));
     }
   });
 }
 
-function SpeechToText() {
+if (compareButton) {
+  compareButton.addEventListener("click", async () => {
+    const files = Array.from(fileInput.files || []);
+    if (files.length < 2) {
+      showError(t("contract.compareNeed"));
+      return;
+    }
+    setBusy(compareButton, true, t("contract.compareBusy"));
+    try {
+      const data = await parseJson(
+        await fetch("/api/contract/compare", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lang: currentLang() }),
+        })
+      );
+      renderCompareTable(data.filenames || [], data.rows || []);
+      if (statusEl) {
+        statusEl.textContent = t("contract.compareReady");
+        statusEl.classList.remove("error");
+      }
+      if (contractChat) {
+        contractChat.hidden = false;
+      }
+    } catch (error) {
+      showError(error.message || t("ask.error"));
+    } finally {
+      setBusy(compareButton, false, t("contract.compare"));
+    }
+  });
+}
+
+function renderCompareTable(filenames, rows) {
+  if (!answerEl) {
+    return;
+  }
+  stopSpeaking();
+  answerEl.hidden = false;
+  answerEl.innerHTML = "";
+  const table = document.createElement("table");
+  table.className = "compare-table";
+  const thead = document.createElement("thead");
+  const headRow = document.createElement("tr");
+  [currentLang() === "en" ? "Topic" : "Başlık"]
+    .concat(filenames)
+    .concat([t("contract.winner")])
+    .forEach((label) => {
+      const th = document.createElement("th");
+      th.textContent = label;
+      headRow.appendChild(th);
+    });
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+  const tbody = document.createElement("tbody");
+  rows.forEach((row) => {
+    const tr = document.createElement("tr");
+    const title = document.createElement("td");
+    title.textContent = row.title || "";
+    tr.appendChild(title);
+    (row.values || []).forEach((value) => {
+      const td = document.createElement("td");
+      td.textContent = value;
+      tr.appendChild(td);
+    });
+    const win = document.createElement("td");
+    win.textContent = row.winner || "";
+    tr.appendChild(win);
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  answerEl.appendChild(table);
+  if (sourcesEl) {
+    sourcesEl.hidden = true;
+    sourcesEl.innerHTML = "";
+  }
+  if (speakButton) {
+    speakButton.hidden = true;
+  }
+}
+
+if (contractAskForm) {
+  contractAskForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const question = (contractQuestion && contractQuestion.value.trim()) || "";
+    if (!question) {
+      showError(t("ask.empty"));
+      return;
+    }
+    setBusy(contractAskButton, true, t("contract.chatBusy"));
+    try {
+      const data = await parseJson(
+        await fetch("/api/contract/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question, lang: currentLang() }),
+        })
+      );
+      showAnswer(data.answer, data.sources, t("contract.chatReady"));
+    } catch (error) {
+      showError(error.message || t("ask.error"));
+    } finally {
+      setBusy(contractAskButton, false, t("contract.chatSubmit"));
+    }
+  });
+}
+
+function SpeechToText(options) {
+  options = options || {};
+  this.button = options.button;
+  this.statusEl = options.statusEl;
+  this.input = options.input;
   this.listening = false;
   this.opening = false;
   this.recognition = null;
   this.media = { stream: null, recorder: null, chunks: [] };
-  micButton.addEventListener("click", (event) => this.toggle(event));
+  if (this.button) {
+    this.button.addEventListener("click", (event) => this.toggle(event));
+  }
 }
 
 SpeechToText.prototype.setStatus = function (message, isError) {
-  if (!message) {
-    micStatus.hidden = true;
-    micStatus.textContent = "";
-    micStatus.classList.remove("is-error");
+  if (!this.statusEl) {
     return;
   }
-  micStatus.hidden = false;
-  micStatus.textContent = message;
-  micStatus.classList.toggle("is-error", Boolean(isError));
+  if (!message) {
+    this.statusEl.hidden = true;
+    this.statusEl.textContent = "";
+    this.statusEl.classList.remove("is-error");
+    return;
+  }
+  this.statusEl.hidden = false;
+  this.statusEl.textContent = message;
+  this.statusEl.classList.toggle("is-error", Boolean(isError));
 };
 
 SpeechToText.prototype.setListening = function (listening) {
   this.listening = listening;
-  micButton.classList.toggle("is-listening", listening);
-  micButton.setAttribute("aria-pressed", listening ? "true" : "false");
-  micButton.disabled = false;
+  if (!this.button) {
+    return;
+  }
+  this.button.classList.toggle("is-listening", listening);
+  this.button.setAttribute("aria-pressed", listening ? "true" : "false");
+  this.button.disabled = false;
 };
 
 SpeechToText.prototype.fillQuestion = function (text) {
-  const spoken = (text || "").trim();
-  if (!spoken) {
-    this.setStatus("Konuşma anlaşılamadı. Tekrar deneyin.", true);
+  if (!this.input) {
     return;
   }
-  const current = questionInput.value.trim();
-  questionInput.value = current ? `${current} ${spoken}` : spoken;
-  questionInput.dispatchEvent(new Event("input", { bubbles: true }));
-  this.setStatus("Metne çevrildi. İsterseniz düzeltip Açıkla’ya basın.");
+  const spoken = (text || "").trim();
+  if (!spoken) {
+    this.setStatus(t("mic.notUnderstood"), true);
+    return;
+  }
+  const current = this.input.value.trim();
+  this.input.value = current ? `${current} ${spoken}` : spoken;
+  this.input.dispatchEvent(new Event("input", { bubbles: true }));
+  this.setStatus(t("mic.filled"));
 };
 
 SpeechToText.prototype.toggle = function (event) {
@@ -547,11 +811,11 @@ SpeechToText.prototype.toggle = function (event) {
 
 SpeechToText.prototype.startRecording = async function () {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    this.setStatus("Bu tarayıcı mikrofonu desteklemiyor. Chrome deneyin.", true);
+    this.setStatus(t("mic.unsupported"), true);
     return;
   }
   this.opening = true;
-  this.setStatus("Tarayıcı mikrofon izni istiyor… adres çubuğundan İzin ver’e basın.");
+  this.setStatus(t("mic.permission"));
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     this.opening = false;
@@ -572,7 +836,7 @@ SpeechToText.prototype.startRecording = async function () {
     recorder.onstop = () => this.sendRecording();
     recorder.start(250);
     this.setListening(true);
-    this.setStatus("Dinleniyor… bitirmek için mikrofona tekrar basın.");
+    this.setStatus(t("mic.listening"));
     this.recordTimer = window.setTimeout(() => this.stop(), 20000);
   } catch (error) {
     this.opening = false;
@@ -580,9 +844,7 @@ SpeechToText.prototype.startRecording = async function () {
       error &&
       (error.name === "NotAllowedError" || error.name === "PermissionDeniedError");
     this.setStatus(
-      denied
-        ? "Mikrofon izni verilmedi. Adres çubuğundaki kilit simgesinden mikrofona izin verin."
-        : "Mikrofona erişilemedi. İzin verip tekrar deneyin.",
+      denied ? t("mic.denied") : t("mic.failed"),
       true
     );
     this.setListening(false);
@@ -597,14 +859,15 @@ SpeechToText.prototype.sendRecording = async function () {
   this.media = { stream: null, recorder: null, chunks: [] };
   const blob = new Blob(chunks, { type: recorder && recorder.mimeType ? recorder.mimeType : "audio/webm" });
   if (!blob.size) {
-    this.setStatus("Ses kaydı boş. Tekrar deneyin.", true);
+    this.setStatus(t("mic.empty"), true);
     return;
   }
   const body = new FormData();
   const extension = blob.type.includes("mp4") ? "m4a" : "webm";
   body.append("audio", blob, `speech.${extension}`);
-  micButton.disabled = true;
-  this.setStatus("Ses metne çevriliyor…");
+  body.append("lang", currentLang());
+  this.button.disabled = true;
+  this.setStatus(t("mic.transcribing"));
   try {
     const data = await parseJson(
       await fetch("/api/transcribe", {
@@ -616,7 +879,7 @@ SpeechToText.prototype.sendRecording = async function () {
   } catch (error) {
     this.setStatus(error.message, true);
   } finally {
-    micButton.disabled = false;
+    this.button.disabled = false;
   }
 };
 
@@ -636,8 +899,19 @@ SpeechToText.prototype.stop = function () {
   this.setListening(false);
 };
 
-if (micButton) {
-  new SpeechToText();
+if (micButton && questionInput) {
+  new SpeechToText({
+    button: micButton,
+    statusEl: micStatus,
+    input: questionInput,
+  });
+}
+if (contractMicButton && contractQuestion) {
+  new SpeechToText({
+    button: contractMicButton,
+    statusEl: contractMicStatus,
+    input: contractQuestion,
+  });
 }
 
 const termForm = document.getElementById("term-form");
@@ -662,21 +936,29 @@ async function refreshStats() {
       ([name, count]) => `${name}: ${count}`
     );
     kbStats.textContent = data.total
-      ? `Şu an ${data.total} parça kayıtlı. ${parts.join(" · ")}`
-      : "Bilgi tabanı boş. Önce ingest çalıştırın veya buradan ekleyin.";
+      ? t("kb.stats", { n: data.total, parts: parts.join(" · ") })
+      : t("kb.empty");
   } catch (error) {
-    kbStats.textContent = "Bilgi tabanı istatistiği alınamadı.";
+    kbStats.textContent = t("kb.statsFail");
   }
 }
 
 if (kbDocFile && kbDocName) {
   kbDocFile.addEventListener("change", () => {
-    kbDocName.textContent = kbDocFile.files[0] ? kbDocFile.files[0].name : "PDF veya metin seçin";
+    kbDocName.textContent = kbDocFile.files[0] ? kbDocFile.files[0].name : t("kb.docPick");
+  });
+  bindDropZone(kbDocFile, {
+    accept: (file) =>
+      /pdf|plain|markdown/.test(file.type) || /\.(pdf|txt|md)$/i.test(file.name),
   });
 }
 if (kbImageFile && kbImageName) {
   kbImageFile.addEventListener("change", () => {
-    kbImageName.textContent = kbImageFile.files[0] ? kbImageFile.files[0].name : "Görüntü seçin";
+    kbImageName.textContent = kbImageFile.files[0] ? kbImageFile.files[0].name : t("kb.imgPick");
+  });
+  bindDropZone(kbImageFile, {
+    accept: (file) =>
+      /^image\//.test(file.type) || /\.(png|jpe?g|webp)$/i.test(file.name),
   });
 }
 
@@ -686,10 +968,10 @@ if (termForm) {
     const terim = document.getElementById("term-name").value.trim();
     const aciklama = document.getElementById("term-explain").value.trim();
     if (!terim || !aciklama) {
-      showError("Terim adı ve açıklama zorunlu.");
+      showError(t("kb.termRequired"));
       return;
     }
-    setBusy(termButton, true, "Kaydediliyor...");
+    setBusy(termButton, true, t("kb.saving"));
     try {
       const data = await parseJson(
         await fetch("/api/knowledge/term", {
@@ -703,13 +985,13 @@ if (termForm) {
           }),
         })
       );
-      showAnswer(data.message, [], "Terim eklendi.");
+      showAnswer(data.message, [], t("kb.termAdded"));
       termForm.reset();
       refreshStats();
     } catch (error) {
       showError(error.message);
     } finally {
-      setBusy(termButton, false, "Terimi kaydet");
+      setBusy(termButton, false, t("kb.saveTerm"));
     }
   });
 }
@@ -719,22 +1001,22 @@ if (docForm) {
     event.preventDefault();
     const file = kbDocFile.files[0];
     if (!file) {
-      showError("Lütfen bir belge seçin.");
+      showError(t("kb.docRequired"));
       return;
     }
     const body = new FormData();
     body.append("file", file);
-    setBusy(docButton, true, "Ekleniyor...");
+    setBusy(docButton, true, t("kb.adding"));
     try {
       const data = await parseJson(await fetch("/api/knowledge/document", { method: "POST", body }));
-      showAnswer(data.message, [], "Belge eklendi.");
+      showAnswer(data.message, [], t("kb.docAdded"));
       docForm.reset();
-      kbDocName.textContent = "PDF veya metin seçin";
+      kbDocName.textContent = t("kb.docPick");
       refreshStats();
     } catch (error) {
       showError(error.message);
     } finally {
-      setBusy(docButton, false, "Belgeyi ekle");
+      setBusy(docButton, false, t("kb.docBtn"));
     }
   });
 }
@@ -744,27 +1026,35 @@ if (imageForm) {
     event.preventDefault();
     const file = kbImageFile.files[0];
     if (!file) {
-      showError("Lütfen bir görüntü seçin.");
+      showError(t("kb.imgRequired"));
       return;
     }
     const body = new FormData();
     body.append("file", file);
-    setBusy(imageButton, true, "Okunuyor...");
+    setBusy(imageButton, true, t("kb.reading"));
     try {
       const data = await parseJson(await fetch("/api/knowledge/image", { method: "POST", body }));
       const detail = data.extracted
-        ? `${data.message}\n\nOkunan metin:\n${data.extracted}`
+        ? `${data.message}\n\n${t("kb.extracted")}\n${data.extracted}`
         : data.message;
-      showAnswer(detail, [], "Görüntü eklendi.");
+      showAnswer(detail, [], t("kb.imgAdded"));
       imageForm.reset();
-      kbImageName.textContent = "Görüntü seçin";
+      kbImageName.textContent = t("kb.imgPick");
       refreshStats();
     } catch (error) {
       showError(error.message);
     } finally {
-      setBusy(imageButton, false, "Görüntüyü ekle");
+      setBusy(imageButton, false, t("kb.imgBtn"));
     }
   });
 }
 
 refreshStats();
+
+if (questionInput) {
+  var pendingQ = new URLSearchParams(window.location.search).get("q");
+  if (pendingQ) {
+    questionInput.value = pendingQ;
+    questionInput.focus();
+  }
+}

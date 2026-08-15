@@ -19,6 +19,19 @@ SYSTEM_PROMPT = (
     "Güncel faiz tavanı, vergi oranı veya yasal madde numarası uydurma."
 )
 
+SYSTEM_PROMPT_EN = (
+    "You explain financial terms in plain, everyday English. "
+    "Use only the given context; do not invent facts that are not there. "
+    "Context may come from a glossary, contract-clause guide, consumer guide, "
+    "or terms, documents and images the user added. "
+    "Support the answer with a short example. Keep it concise. "
+    "Write several points as numbered items; each item must be "
+    "'1. **Title**: explanation'. If a single term is asked, the first line "
+    "must be '1. **Term name**: plain explanation'. "
+    "If you are unsure, say 'not in the context'. "
+    "Do not invent current rate caps, tax rates or statute numbers."
+)
+
 CONTRACT_SYSTEM_PROMPT = (
     "Sen kredi ve kredi kartı sözleşmelerini sade Türkçeye çeviren bir asistansın. "
     "Sadece verilen sözleşme metnine ve terim bağlamına dayan. "
@@ -35,9 +48,27 @@ CONTRACT_SYSTEM_PROMPT = (
     "[Dikkat] yaz ve nedenini kısaca açıkla."
 )
 
+CONTRACT_SYSTEM_PROMPT_EN = (
+    "You translate loan and credit-card contracts into plain English. "
+    "Rely only on the given contract text and term context. "
+    "Do not invent interest, penalties or cancellation terms that are not in the text. "
+    "Summarise critical clauses as numbered cards. "
+    "Each item must be exactly: "
+    "'1. **Title**: [Standard] explanation' or "
+    "'1. **Title**: [Attention] explanation'. "
+    "Keep titles short (e.g. Interest Rates, Late Fees). "
+    "Use [Standard] for typical expected clauses. "
+    "Use [Attention] when a penalty or rate is above market, early-termination "
+    "fees are high, the whole debt can be called at once, or a term may surprise the user, "
+    "and briefly say why."
+)
+
 FRESHNESS_WARNING = (
     "Bu bilgi {date} itibarıyla günceldir, güncel mevzuatı "
     "kontrol etmenizi öneririz."
+)
+FRESHNESS_WARNING_EN = (
+    "This information is current as of {date}; please verify the latest regulations."
 )
 STALE_AFTER_DAYS = 365
 
@@ -64,7 +95,12 @@ def _parse_date(value) -> date | None:
         return None
 
 
-def freshness_notice(last_updated_dates: list | None) -> str:
+def _normalize_lang(language: str | None) -> str:
+    value = str(language or "tr").strip().lower()
+    return "en" if value.startswith("en") else "tr"
+
+
+def freshness_notice(last_updated_dates: list | None, language: str = "tr") -> str:
     """Fixed warning when retrieved knowledge is older than STALE_AFTER_DAYS."""
     parsed = [_parse_date(value) for value in (last_updated_dates or [])]
     parsed = [value for value in parsed if value]
@@ -73,7 +109,8 @@ def freshness_notice(last_updated_dates: list | None) -> str:
     oldest = min(parsed)
     if date.today() - oldest <= timedelta(days=STALE_AFTER_DAYS):
         return ""
-    return FRESHNESS_WARNING.format(date=oldest.strftime("%d.%m.%Y"))
+    template = FRESHNESS_WARNING_EN if _normalize_lang(language) == "en" else FRESHNESS_WARNING
+    return template.format(date=oldest.strftime("%d.%m.%Y"))
 
 
 def generate_answer(
@@ -82,6 +119,8 @@ def generate_answer(
     extra_instructions: str = "",
     system_prompt: str | None = None,
     last_updated_dates: list | None = None,
+    language: str = "tr",
+    history: list[dict] | None = None,
 ) -> str:
     """Send retrieved context + user question to the configured LLM provider."""
     if LLM_PROVIDER != "groq":
@@ -91,22 +130,38 @@ def generate_answer(
         )
     _require_groq_key()
 
+    lang = _normalize_lang(language)
     client = Groq(api_key=GROQ_API_KEY)
-    context = "\n\n".join(context_chunks) if context_chunks else "Bağlam bulunamadı."
+    context = "\n\n".join(context_chunks) if context_chunks else (
+        "No context found." if lang == "en" else "Bağlam bulunamadı."
+    )
     user_content = f"Bağlam:\n{context}\n\nSoru:\n{question}"
     if extra_instructions:
         user_content += f"\n\nEk talimat:\n{extra_instructions}"
 
+    messages = [
+        {
+            "role": "system",
+            "content": system_prompt
+            or (SYSTEM_PROMPT_EN if lang == "en" else SYSTEM_PROMPT),
+        }
+    ]
+    for turn in (history or [])[-6:]:
+        question_text = (turn.get("q") or "").strip()
+        answer_text = (turn.get("a") or "").strip()
+        if question_text:
+            messages.append({"role": "user", "content": question_text})
+        if answer_text:
+            messages.append({"role": "assistant", "content": answer_text})
+    messages.append({"role": "user", "content": user_content})
+
     completion = client.chat.completions.create(
         model=LLM_MODEL,
-        messages=[
-            {"role": "system", "content": system_prompt or SYSTEM_PROMPT},
-            {"role": "user", "content": user_content},
-        ],
+        messages=messages,
         temperature=0.3,
     )
     answer = completion.choices[0].message.content or ""
-    notice = freshness_notice(last_updated_dates)
+    notice = freshness_notice(last_updated_dates, language=lang)
     if notice:
         answer = answer.rstrip() + "\n\n" + notice
     return answer
@@ -115,14 +170,19 @@ def generate_answer(
 WHISPER_MODEL = "whisper-large-v3"
 
 
-def transcribe_audio(file_bytes: bytes, filename: str, mime_type: str = "audio/webm") -> str:
+def transcribe_audio(
+    file_bytes: bytes,
+    filename: str,
+    mime_type: str = "audio/webm",
+    language: str = "tr",
+) -> str:
     """Speech-to-text via Groq Whisper. Does not call the chat LLM."""
     _require_groq_key()
     client = Groq(api_key=GROQ_API_KEY)
     result = client.audio.transcriptions.create(
         file=(filename, file_bytes, mime_type),
         model=WHISPER_MODEL,
-        language="tr",
+        language=_normalize_lang(language),
         response_format="text",
     )
     if isinstance(result, str):

@@ -1,10 +1,13 @@
+import math
 import re
 
 from db import get_connection
 from rag.embeddings import embed_text
+from rag.reranker import rerank_chunks
 from rag.store import ensure_regulation_columns
+from config import RERANK_CANDIDATES, RERANK_TOP_K
 
-VECTOR_CANDIDATES = 14
+VECTOR_CANDIDATES = RERANK_CANDIDATES
 MAX_PER_SOURCE_TYPE = 4
 QUESTION_TAIL = re.compile(
     r"[\s?!.]*(nedir|ne demek|ne anlama gelir|açıkla|nedir\s*)[\s?!.]*$",
@@ -64,8 +67,51 @@ def _diversify(rows: list[tuple], limit: int) -> list[tuple]:
     return selected[:limit]
 
 
-def retrieve_chunks(query: str, limit: int = 8) -> list[dict]:
-    """Return the closest knowledge chunks by cosine distance, mixed by source."""
+def _cosine_distance(left: list[float], right: list[float]) -> float:
+    if not left or not right or len(left) != len(right):
+        return 1.0
+    dot = 0.0
+    left_norm = 0.0
+    right_norm = 0.0
+    for a, b in zip(left, right):
+        dot += a * b
+        left_norm += a * a
+        right_norm += b * b
+    if left_norm <= 0 or right_norm <= 0:
+        return 1.0
+    similarity = dot / (math.sqrt(left_norm) * math.sqrt(right_norm))
+    return 1.0 - similarity
+
+
+def retrieve_from_corpus(
+    query: str, corpus: list[dict], limit: int, rerank: bool = True
+) -> list[dict]:
+    """Search only the given in-memory chunks (no Neon)."""
+    if not corpus:
+        return []
+    query_vector = embed_text(query)
+    scored = []
+    for chunk in corpus:
+        item = dict(chunk)
+        item["distance"] = _cosine_distance(query_vector, chunk.get("embedding") or [])
+        scored.append(item)
+    scored.sort(key=lambda item: item["distance"])
+    candidates = scored[: max(limit, VECTOR_CANDIDATES)]
+    if not rerank:
+        return candidates[:limit]
+    return rerank_chunks(query, candidates, limit)
+
+
+def retrieve_chunks(
+    query: str,
+    limit: int | None = None,
+    rerank: bool = True,
+    corpus: list[dict] | None = None,
+) -> list[dict]:
+    """Return the closest knowledge chunks, optionally from a session corpus."""
+    top_k = RERANK_TOP_K if limit is None else limit
+    if corpus is not None:
+        return retrieve_from_corpus(query, corpus, top_k, rerank=rerank)
     ensure_regulation_columns()
     query_vector = vector_to_literal(embed_text(query))
     connection = get_connection()
@@ -78,7 +124,7 @@ def retrieve_chunks(query: str, limit: int = 8) -> list[dict]:
                 ORDER BY embedding <=> %s::vector
                 LIMIT %s
                 """,
-                (query_vector, query_vector, max(limit, VECTOR_CANDIDATES)),
+                (query_vector, query_vector, VECTOR_CANDIDATES),
             )
             vector_rows = cursor.fetchall()
             keyword_rows = []
@@ -104,7 +150,9 @@ def retrieve_chunks(query: str, limit: int = 8) -> list[dict]:
                 continue
             merged.append(row)
             seen.add(row[0])
-        mixed = _diversify(merged, limit)
-        return [_row_to_chunk(row) for row in mixed]
+        candidates = [_row_to_chunk(row) for row in merged[:VECTOR_CANDIDATES]]
+        if not rerank:
+            return candidates[:top_k]
+        return rerank_chunks(query, candidates, top_k)
     finally:
         connection.close()

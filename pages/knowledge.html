@@ -3,75 +3,70 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {% include "_head.html" %}
     <title>Bilgi tabanına ekle — FinÇevirmen</title>
-    <link rel="stylesheet" href="/style.css?v=regtech1" />
-    <link rel="stylesheet" href="/inner-field.css?v=field10" />
+    <link rel="stylesheet" href="/style.css?v=brand15" />
   </head>
-  <body class="inner-body">
-    <header class="inner-nav">
-      <a href="/" data-transition class="inner-brand">FinÇevirmen</a>
-      <nav>
-        <a href="/nasil-calisir" data-transition>Nasıl çalışır</a>
-        <a href="/bilgi" data-transition aria-current="page">Bilgi tabanı</a>
-        <a href="/dashboard/revenue-splits" data-transition>Gelir paylaşımı</a>
-      </nav>
-    </header>
-
+  <body class="site-body inner-body" data-title-key="doc.title.kb">
+    {% include "_nav.html" %}
     <div class="page">
       <section class="card knowledge-card" id="knowledge" aria-labelledby="kb-title">
-        <h2 id="kb-title">Bilgi tabanına ekle</h2>
-        <p class="hint">
+        <h2 id="kb-title" data-i18n="kb.title">Bilgi tabanına ekle</h2>
+        <p class="hint" data-i18n="kb.hint">
           Eklediğiniz terim, belge ve görüntüler Neon’a yazılır. Sonraki
           sorularda RAG bunları da arar.
         </p>
-        <p class="kb-stats" id="kb-stats">Bilgi tabanı yükleniyor…</p>
-        <div class="kb-grid">
-          <form id="term-form">
-            <h3>Terim ekle</h3>
+        <p class="kb-stats" id="kb-stats" data-i18n="kb.loading">Bilgi tabanı yükleniyor…</p>
+        <div class="kb-grid bento">
+          <form id="term-form" class="bento-card is-wide">
+            <p class="bento-kicker" data-i18n="kb.termKicker">Sözlük kaydı</p>
+            <h3 data-i18n="kb.term">Terim ekle</h3>
             <label class="field">
-              <span>Terim</span>
-              <input id="term-name" name="terim" type="text" required placeholder="Örn. Temerrüt" />
+              <span data-i18n="kb.termName">Terim</span>
+              <input id="term-name" name="terim" type="text" required data-i18n-placeholder="ph.term" placeholder="Örn. Temerrüt" />
             </label>
             <label class="field">
-              <span>Kategori</span>
-              <input id="term-category" name="kategori" type="text" placeholder="Kredi, muhasebe…" />
+              <span data-i18n="kb.cat">Kategori</span>
+              <input id="term-category" name="kategori" type="text" data-i18n-placeholder="ph.cat" placeholder="Kredi, muhasebe…" />
             </label>
             <label class="field">
-              <span>Açıklama</span>
-              <textarea id="term-explain" name="aciklama" rows="4" required placeholder="Sade Türkçe anlamı"></textarea>
+              <span data-i18n="kb.explain">Açıklama</span>
+              <textarea id="term-explain" name="aciklama" rows="4" required data-i18n-placeholder="ph.explain" placeholder="Sade Türkçe anlamı"></textarea>
             </label>
             <label class="field">
-              <span>Örnek (isteğe bağlı)</span>
-              <input id="term-example" name="ornek" type="text" placeholder="Kısa bir cümle" />
+              <span data-i18n="kb.example">Örnek (isteğe bağlı)</span>
+              <input id="term-example" name="ornek" type="text" data-i18n-placeholder="ph.example" placeholder="Kısa bir cümle" />
             </label>
-            <button type="submit" id="term-button">Terimi kaydet</button>
+            <button type="submit" id="term-button" data-i18n="kb.saveTerm">Terimi kaydet</button>
           </form>
 
-          <form id="doc-form">
-            <h3>Belge ekle</h3>
-            <p class="hint">PDF, TXT veya MD. Metin parçalanıp vektör olarak saklanır.</p>
+          <form id="doc-form" class="bento-card">
+            <p class="bento-kicker" data-i18n="kb.docKicker">Vektörleştir</p>
+            <h3 data-i18n="kb.doc">Belge ekle</h3>
+            <p class="hint" data-i18n="kb.docHint">PDF, TXT veya MD. Metin parçalanıp vektör olarak saklanır.</p>
             <label class="file-label">
               <input id="kb-doc-file" type="file" accept=".pdf,.txt,.md,application/pdf,text/plain" required />
-              <span id="kb-doc-name">PDF veya metin seçin</span>
+              <span id="kb-doc-name" data-i18n="kb.docPick">PDF veya metin seçin</span>
             </label>
-            <button type="submit" id="doc-button">Belgeyi ekle</button>
+            <button type="submit" id="doc-button" data-i18n="kb.docBtn">Belgeyi ekle</button>
           </form>
 
-          <form id="image-form">
-            <h3>Görüntü ekle</h3>
-            <p class="hint">Dekont, ekstre veya sözleşme fotoğrafı. Metin okunup eklenir.</p>
+          <form id="image-form" class="bento-card">
+            <p class="bento-kicker" data-i18n="kb.imgKicker">OCR</p>
+            <h3 data-i18n="kb.img">Görüntü ekle</h3>
+            <p class="hint" data-i18n="kb.imgHint">Dekont, ekstre veya sözleşme fotoğrafı. Metin okunup eklenir.</p>
             <label class="file-label">
               <input id="kb-image-file" type="file" accept="image/png,image/jpeg,image/webp" required />
-              <span id="kb-image-name">Görüntü seçin</span>
+              <span id="kb-image-name" data-i18n="kb.imgPick">Görüntü seçin</span>
             </label>
-            <button type="submit" id="image-button">Görüntüyü ekle</button>
+            <button type="submit" id="image-button" data-i18n="kb.imgBtn">Görüntüyü ekle</button>
           </form>
         </div>
       </section>
 
       <section class="results card" aria-live="polite">
         <div class="results-head">
-          <h2>Sonuç</h2>
+          <h2 data-i18n="results">Sonuç</h2>
           <button
             type="button"
             id="speak-button"
@@ -80,17 +75,16 @@
             aria-pressed="false"
           >
             <span class="speak-icon" aria-hidden="true"></span>
-            <span class="speak-label">Seslendir</span>
+            <span class="speak-label" data-i18n="speak">Seslendir</span>
           </button>
         </div>
-        <p id="status" class="status">Henüz bir kayıt eklemediniz.</p>
+        <p id="status" class="status" data-i18n="kb.status">Henüz bir kayıt eklemediniz.</p>
         <div id="answer" class="answer" hidden></div>
-        <ul id="sources" class="sources" hidden></ul>
+        <ul id="sources" class="cite-list" hidden></ul>
       </section>
     </div>
-    <script src="/vendor/gsap.min.js"></script>
-    <script src="/inner-field.js?v=field10"></script>
-    <script src="/script.js?v=regtech2" defer></script>
-    <script src="/motion.js?v=story3" defer></script>
+    {% include "_footer.html" %}
+    <script src="/i18n.js?v=brand16"></script>
+    <script src="/script.js?v=brand10" defer></script>
   </body>
 </html>

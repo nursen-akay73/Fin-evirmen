@@ -1,44 +1,6 @@
 (function () {
-  var STORAGE_KEY = "fc-transition";
-
   function reducedMotion() {
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  }
-
-  function ensureVeil() {
-    var veil = document.querySelector(".page-veil");
-    if (veil) {
-      return veil;
-    }
-    veil = document.createElement("div");
-    veil.className = "page-veil";
-    veil.setAttribute("aria-hidden", "true");
-    veil.innerHTML =
-      '<div class="page-veil-panel page-veil-gold">' +
-      '<canvas class="page-veil-icons" data-veil-tone="gold" aria-hidden="true"></canvas>' +
-      "</div>" +
-      '<div class="page-veil-panel page-veil-navy">' +
-      '<canvas class="page-veil-icons" data-veil-tone="navy" aria-hidden="true"></canvas>' +
-      "</div>";
-    document.body.appendChild(veil);
-    return veil;
-  }
-
-  function startVeilIcons(veil) {
-    if (!window.InnerField || !window.InnerField.attachVeil) {
-      return;
-    }
-    veil.querySelectorAll(".page-veil-icons").forEach(function (canvas) {
-      window.InnerField.attachVeil(canvas, canvas.getAttribute("data-veil-tone") !== "gold");
-    });
-  }
-
-  function stopVeilIcons(veil) {
-    veil.querySelectorAll(".page-veil-icons").forEach(function (canvas) {
-      if (canvas._stopVeil) {
-        canvas._stopVeil();
-      }
-    });
   }
 
   function splitWords(element) {
@@ -95,81 +57,48 @@
       );
   }
 
-  function playEnter() {
-    var veil = ensureVeil();
-    var gold = veil.querySelector(".page-veil-gold");
-    var navy = veil.querySelector(".page-veil-navy");
-    var coming = sessionStorage.getItem(STORAGE_KEY) === "1";
-    sessionStorage.removeItem(STORAGE_KEY);
-
-    if (!window.gsap || reducedMotion() || !coming) {
-      if (window.gsap) {
-        window.gsap.set([gold, navy], { yPercent: -101 });
-      }
-      stopVeilIcons(veil);
-      veil.classList.add("is-idle");
-      playStory();
+  function revealInnerPages() {
+    if (document.getElementById("hero")) {
       return;
     }
-
-    startVeilIcons(veil);
-    window.gsap.set([gold, navy], { yPercent: 0 });
-    window.gsap
-      .timeline({
-        onComplete: function () {
-          stopVeilIcons(veil);
-          veil.classList.add("is-idle");
-          playStory();
-        },
-      })
-      .to(navy, { yPercent: -101, duration: 0.72, ease: "power3.inOut" }, 0.04)
-      .to(gold, { yPercent: -101, duration: 0.72, ease: "power3.inOut" }, 0.16);
+    var nodes = document.querySelectorAll(
+      ".inner-body .page > .card, .inner-body .kb-grid > form"
+    );
+    if (!nodes.length) {
+      return;
+    }
+    nodes.forEach(function (node, index) {
+      node.classList.add("js-reveal");
+      node.style.setProperty("--stagger", index * 70 + "ms");
+    });
+    if (reducedMotion() || !("IntersectionObserver" in window)) {
+      nodes.forEach(function (node) {
+        node.classList.add("is-in");
+      });
+      return;
+    }
+    var observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) {
+            return;
+          }
+          entry.target.classList.add("is-in");
+          observer.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.14, rootMargin: "0px 0px -6% 0px" }
+    );
+    nodes.forEach(function (node) {
+      observer.observe(node);
+    });
   }
-
-  function go(url) {
-    if (!window.gsap || reducedMotion()) {
-      window.location.href = url;
-      return;
-    }
-    sessionStorage.setItem(STORAGE_KEY, "1");
-    var veil = ensureVeil();
-    veil.classList.remove("is-idle");
-    var gold = veil.querySelector(".page-veil-gold");
-    var navy = veil.querySelector(".page-veil-navy");
-    startVeilIcons(veil);
-    window.gsap.set([gold, navy], { yPercent: 101 });
-    window.gsap
-      .timeline({
-        onComplete: function () {
-          window.location.href = url;
-        },
-      })
-      .to(gold, { yPercent: 0, duration: 0.52, ease: "power3.inOut" })
-      .to(navy, { yPercent: 0, duration: 0.52, ease: "power3.inOut" }, 0.1);
-  }
-
-  document.addEventListener("click", function (event) {
-    var link = event.target.closest("a[data-transition]");
-    if (!link) {
-      return;
-    }
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
-      return;
-    }
-    if (link.target === "_blank") {
-      return;
-    }
-    var url = link.href;
-    if (!url || url === window.location.href) {
-      return;
-    }
-    event.preventDefault();
-    go(url);
-  });
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", playEnter);
+    document.addEventListener("DOMContentLoaded", playStory);
   } else {
-    playEnter();
+    playStory();
   }
+
+  revealInnerPages();
 })();

@@ -3,18 +3,40 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {% include "_head.html" %}
     <title>FinÇevirmen — Finansal dili sade Türkçeye çevir</title>
-    <link rel="stylesheet" href="/style.css?v=regtech1" />
-    <link rel="stylesheet" href="/hero.css?v=drift1" />
+    <link rel="stylesheet" href="/style.css?v=brand16" />
+    <link rel="stylesheet" href="/hero.css?v=brand13" />
+    <script>
+      (function () {
+        try {
+          if (sessionStorage.getItem("fc-intro") === "1") {
+            return;
+          }
+        } catch (error) {
+          return;
+        }
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          return;
+        }
+        document.documentElement.classList.add("fc-intro");
+      })();
+    </script>
   </head>
-  <body>
+  <body class="site-body home-body" data-title-key="doc.title.home">
+    {% include "_nav.html" %}
+    <div id="logo-intro" class="logo-intro" aria-hidden="true">
+      <span class="logo-intro-ring"></span>
+      <span class="logo-intro-ring is-inner"></span>
+      <span class="logo-intro-halo"></span>
+      <img src="/logo.png" alt="" width="220" height="220" />
+    </div>
     <section class="fintech-hero" id="hero" aria-label="FinÇevirmen tanıtım">
       <div class="fintech-bg" data-hero-bg aria-hidden="true">
+        <canvas class="topo-field" data-topo data-topo-scene aria-hidden="true"></canvas>
+        <div class="hero-wave-veil" data-hero-wave-veil></div>
         <div class="hero-atmosphere" data-layer="atmosphere"></div>
-        <div class="hero-grid" data-layer="grid"></div>
         <div class="hero-gl" data-hero-gl-root aria-hidden="true"></div>
-        <div class="hero-particles" data-layer="particles"></div>
-        <div class="hero-data" data-layer="data"></div>
         <div class="hero-cursor-light" data-cursor-light></div>
         <div class="hero-noise" data-layer="noise"></div>
       </div>
@@ -31,28 +53,27 @@
           </div>
         </div>
         <div class="hero-copy" data-hero-copy>
-          <p class="eyebrow reveal-item" style="--d: 150ms">
+          <p class="eyebrow reveal-item" style="--d: 0ms" data-i18n="hero.eyebrow">
             RAG destekli sade dil asistanı
           </p>
-          <h1>
-            <span class="reveal-line" style="--d: 250ms"
-              ><span>Finansal dili</span></span
-            >
-            <span class="reveal-line" style="--d: 350ms"
-              ><span>sade Türkçeye çevirin</span></span
-            >
+          <h1 data-hero-title>
+            <span class="reveal-line is-light" data-i18n="hero.line1">Finansal dili</span>
+            <span class="reveal-line is-accent" data-i18n="hero.line2">sade Türkçeye çevirin</span>
           </h1>
-          <p class="lede reveal-item" style="--d: 500ms">
+          <p class="lede reveal-item" style="--d: 720ms" data-i18n="hero.lede">
             Bilanço terimlerini, kredi kartı jargonunu ve sözleşme maddelerini
             günlük Türkçeye çevirir. Uydurmaz; sözlük ve yüklediğiniz metne bakar.
           </p>
-          <div class="hero-actions reveal-item" style="--d: 650ms">
+          <div class="hero-actions reveal-item" style="--d: 980ms">
             <a class="btn-primary" href="#translator" data-magnetic>
-              <span class="btn-label">Terimi açıkla</span>
+              <span class="btn-label" data-i18n="hero.explain">Terimi açıkla</span>
             </a>
             <a class="btn-secondary" href="/nasil-calisir" data-transition data-magnetic>
-              <span class="btn-label">Nasıl çalışır</span>
+              <span class="btn-label" data-i18n="hero.how">Nasıl çalışır</span>
             </a>
+          </div>
+          <div class="hero-trust reveal-item" style="--d: 1180ms">
+            {% include "_trust.html" %}
           </div>
         </div>
       </div>
@@ -61,8 +82,8 @@
     <div class="page" id="tools">
       <main class="grid">
         <section class="card" id="translator" aria-labelledby="ask-title">
-          <h2 id="ask-title">Terim çevirmeni</h2>
-          <p class="hint">
+          <h2 id="ask-title" data-i18n="ask.title">Terim çevirmeni</h2>
+          <p class="hint" data-i18n="ask.hint">
             Yazın veya mikrofona basıp sesli sorun. Soru önce sözlükte aranır,
             sonra modele gider.
           </p>
@@ -74,6 +95,7 @@
                 name="question"
                 rows="6"
                 required
+                data-i18n-placeholder="ask.placeholder"
                 placeholder="Örn. Repo nedir? veya Ekstremde asgari ödeme yazıyor, ne demek?"
               ></textarea>
               <button
@@ -81,20 +103,23 @@
                 id="mic-button"
                 class="mic-button"
                 aria-pressed="false"
+                data-i18n-aria="mic.label"
                 aria-label="Sesli sorun"
                 title="Sesli sorun"
               >
+                <span class="mic-radar" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span class="mic-wave" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
                 <span class="mic-icon" aria-hidden="true"></span>
               </button>
             </div>
             <p id="mic-status" class="mic-status" hidden></p>
-            <button type="submit" id="ask-button">Açıkla</button>
+            <button type="submit" id="ask-button" data-i18n="ask.submit">Açıkla</button>
           </form>
         </section>
 
         <section class="card" id="contract" aria-labelledby="upload-title">
-          <h2 id="upload-title">Sözleşme çözümleyici</h2>
-          <p class="hint">
+          <h2 id="upload-title" data-i18n="contract.title">Sözleşme çözümleyici</h2>
+          <p class="hint" data-i18n="contract.hint">
             Kredi veya kredi kartı sözleşmesi PDF'i yükleyin. Faiz, ceza ve
             iptal maddeleri özetlenir.
           </p>
@@ -105,24 +130,64 @@
                 type="file"
                 name="file"
                 accept="application/pdf,.pdf"
+                multiple
                 required
               />
-              <span id="file-name">PDF seçin</span>
+              <span id="file-name" data-i18n="contract.file">PDF seçin</span>
             </label>
-            <button type="submit" id="upload-button">Özetle</button>
+            <div id="file-status" class="file-status" hidden>
+              <div class="file-status-meta">
+                <strong data-file-name></strong>
+                <span data-file-size></span>
+              </div>
+              <span class="file-badge" data-file-badge></span>
+            </div>
+            <p class="privacy-note" data-i18n="contract.privacy">
+              Yüklediğiniz belgeler kalıcı olarak saklanmaz, oturum sonunda silinir.
+            </p>
+            <div class="contract-actions">
+              <button type="submit" id="upload-button" data-i18n="contract.submit">Özetle</button>
+            </div>
           </form>
+          <div id="contract-chat" class="contract-chat" hidden>
+            <p class="hint" data-i18n="contract.chatHint">Yazın veya mikrofona basıp sesli sorun.</p>
+            <form id="contract-ask-form">
+              <label class="sr-only" for="contract-question" data-i18n="contract.chatHint">
+                Yazın veya mikrofona basıp sesli sorun.
+              </label>
+              <div class="ask-field">
+                <textarea
+                  id="contract-question"
+                  rows="3"
+                  data-i18n-placeholder="contract.chatPlaceholder"
+                  placeholder="Örn. Asgari ödeme oranı kaç?"
+                ></textarea>
+                <button
+                  type="button"
+                  id="contract-mic-button"
+                  class="mic-button"
+                  aria-pressed="false"
+                  data-i18n-aria="mic.label"
+                  aria-label="Sesli sorun"
+                  title="Sesli sorun"
+                >
+                  <span class="mic-radar" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span class="mic-wave" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+                <span class="mic-icon" aria-hidden="true"></span>
+                </button>
+              </div>
+              <p id="contract-mic-status" class="mic-status" hidden></p>
+              <button type="submit" id="contract-ask-button" data-i18n="contract.chatSubmit">
+                Sor
+              </button>
+            </form>
+          </div>
         </section>
       </main>
 
-      <p class="tool-links">
-        <a href="/bilgi" data-transition>Bilgi tabanına ekle</a>
-        <a href="/nasil-calisir" data-transition>RAG nasıl çalışır</a>
-        <a href="/dashboard/revenue-splits" data-transition>Gelir paylaşımı</a>
-      </p>
-
-      <section class="results card" aria-live="polite">
+      <section class="results card" aria-live="polite" data-state="empty">
         <div class="results-head">
-          <h2>Sonuç</h2>
+          <h2 data-i18n="results">Sonuç</h2>
           <button
             type="button"
             id="speak-button"
@@ -131,19 +196,21 @@
             aria-pressed="false"
           >
             <span class="speak-icon" aria-hidden="true"></span>
-            <span class="speak-label">Seslendir</span>
+            <span class="speak-label" data-i18n="speak">Seslendir</span>
           </button>
         </div>
-        <p id="status" class="status">Henüz bir soru sormadınız.</p>
+        <p id="status" class="status" data-i18n="ask.status">Henüz bir soru sormadınız.</p>
         <div id="answer" class="answer" hidden></div>
-        <ul id="sources" class="sources" hidden></ul>
+        <ul id="sources" class="cite-list" hidden></ul>
       </section>
     </div>
-    <script src="/vendor/gsap.min.js"></script>
-    <script src="/inner-field.js?v=field10"></script>
-    <script src="/hero.js?v=drift1" defer></script>
+    {% include "_why.html" %}
+    {% include "_footer.html" %}
+    <script src="/i18n.js?v=brand17"></script>
+    <script src="/intro.js?v=in1" defer></script>
+    <script src="/hero.js?v=brand9" defer></script>
+    <script src="/topo-field.js?v=topo4" defer></script>
     <script type="module" src="/hero-app.js?v=kb1"></script>
-    <script src="/script.js?v=regtech2" defer></script>
-    <script src="/motion.js?v=story3" defer></script>
+    <script src="/script.js?v=brand10" defer></script>
   </body>
 </html>

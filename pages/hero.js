@@ -6,13 +6,13 @@
       code: "TRY",
       symbol: "₺",
       name: "Türk Lirası",
-      radius: 0.54,
-      duration: 46,
+      radius: 0.62,
+      duration: 30,
       reverse: false,
       start: 12,
-      floatX: "4px",
-      floatY: "-6px",
-      floatDuration: "5s",
+      floatX: "1px",
+      floatY: "-1px",
+      floatDuration: "8s",
       glowDuration: "4.8s",
       glowDelay: "-1.2s",
     },
@@ -20,13 +20,13 @@
       code: "USD",
       symbol: "$",
       name: "ABD Doları",
-      radius: 0.68,
-      duration: 58,
-      reverse: true,
+      radius: 0.74,
+      duration: 30,
+      reverse: false,
       start: 102,
-      floatX: "7px",
-      floatY: "4px",
-      floatDuration: "6.5s",
+      floatX: "1px",
+      floatY: "1px",
+      floatDuration: "9s",
       glowDuration: "6.1s",
       glowDelay: "-2.4s",
     },
@@ -35,12 +35,12 @@
       symbol: "€",
       name: "Euro",
       radius: 0.8,
-      duration: 72,
+      duration: 30,
       reverse: false,
       start: 198,
       floatX: "0px",
-      floatY: "-8px",
-      floatDuration: "7.5s",
+      floatY: "-1px",
+      floatDuration: "10s",
       glowDuration: "5.5s",
       glowDelay: "-0.6s",
     },
@@ -48,13 +48,13 @@
       code: "GBP",
       symbol: "£",
       name: "Sterlin",
-      radius: 0.92,
-      duration: 86,
-      reverse: true,
+      radius: 0.94,
+      duration: 30,
+      reverse: false,
       start: 288,
-      floatX: "-3px",
-      floatY: "7px",
-      floatDuration: "9s",
+      floatX: "-1px",
+      floatY: "1px",
+      floatDuration: "11s",
       glowDuration: "6.6s",
       glowDelay: "-3.1s",
     },
@@ -266,17 +266,12 @@
       this.float.appendChild(this.button);
       this.holder.appendChild(this.float);
       this.arm.appendChild(this.holder);
-
-      const delay = -((currency.start / 360) * currency.duration);
+      this.arm.style.animation = "none";
+      this.holder.style.animation = "none";
+      this.arm.style.transform = `rotate(${currency.start}deg)`;
+      this.holder.style.transform = `rotate(${-currency.start}deg)`;
       if (reducedMotion) {
-        this.arm.style.animation = "none";
-        this.holder.style.animation = "none";
         this.float.style.animation = "none";
-        this.arm.style.transform = `rotate(${currency.start}deg)`;
-        this.holder.style.transform = `rotate(${-currency.start}deg)`;
-      } else {
-        this.arm.style.animationDelay = `${delay}s`;
-        this.holder.style.animationDelay = `${delay}s`;
       }
     }
   }
@@ -325,16 +320,35 @@
 
     draw(time, reducedMotion) {
       const bounds = this.stage.getBoundingClientRect();
-      const cx = bounds.width / 2;
-      const cy = bounds.height / 2;
+      const w = Math.max(bounds.width, 1);
+      const h = Math.max(bounds.height, 1);
+      this.svg.setAttribute("viewBox", "0 0 " + w + " " + h);
+      const cx = w / 2;
+      const cy = h / 2;
+      const logoR = Math.min(w, h) * 0.18;
+
       this.lines.forEach(({ line, node }) => {
         const rect = node.getBoundingClientRect();
         const x = rect.left + rect.width / 2 - bounds.left;
         const y = rect.top + rect.height / 2 - bounds.top;
-        line.setAttribute("x1", String(cx));
-        line.setAttribute("y1", String(cy));
-        line.setAttribute("x2", String(x));
-        line.setAttribute("y2", String(y));
+        const dx = x - cx;
+        const dy = y - cy;
+        const dist = Math.hypot(dx, dy) || 1;
+        const nodeR = rect.width / 2 + 6;
+        const start = Math.min(logoR, Math.max(0, dist - nodeR - 2));
+        const end = Math.max(start + 4, dist - nodeR);
+        const nx = dx / dist;
+        const ny = dy / dist;
+        line.setAttribute("x1", String(cx + nx * start));
+        line.setAttribute("y1", String(cy + ny * start));
+        line.setAttribute("x2", String(cx + nx * end));
+        line.setAttribute("y2", String(cy + ny * end));
+        line._nx = nx;
+        line._ny = ny;
+        line._start = start;
+        line._end = end;
+        line._cx = cx;
+        line._cy = cy;
       });
 
       if (reducedMotion) {
@@ -343,9 +357,9 @@
       }
 
       this.pulses.forEach((item) => {
-        const rect = item.node.getBoundingClientRect();
-        const x2 = rect.left + rect.width / 2 - bounds.left;
-        const y2 = rect.top + rect.height / 2 - bounds.top;
+        const line = item.line;
+        const start = line._start || 0;
+        const end = line._end || 0;
         const cycle = ((time / item.duration) + item.phase) % 1;
         const activeWindow = 0.26;
         const traveling = cycle < activeWindow;
@@ -356,9 +370,10 @@
           return;
         }
         const t = cycle / activeWindow;
+        const along = start + (end - start) * t;
         item.pulse.setAttribute("opacity", String(0.25 + t * 0.7));
-        item.pulse.setAttribute("cx", String(x2 + (cx - x2) * t));
-        item.pulse.setAttribute("cy", String(y2 + (cy - y2) * t));
+        item.pulse.setAttribute("cx", String((line._cx || cx) + (line._nx || 0) * along));
+        item.pulse.setAttribute("cy", String((line._cy || cy) + (line._ny || 0) * along));
         item.line.classList.add("is-flowing");
         if (t > 0.9 && !item.arrived) {
           item.arrived = true;
@@ -411,6 +426,16 @@
         const depth = 0.35 + node.currency.radius * 0.7;
         node.button.style.setProperty("--nx", `${x * 10 * depth}px`);
         node.button.style.setProperty("--ny", `${y * 8 * depth}px`);
+      });
+    }
+
+    tick(now) {
+      const period = 30000;
+      const spin = (now / period) * 360;
+      this.nodes.forEach((node) => {
+        const rot = node.currency.start + spin;
+        node.arm.style.transform = `rotate(${rot}deg)`;
+        node.holder.style.transform = `rotate(${-rot}deg)`;
       });
     }
   }
@@ -473,11 +498,13 @@
         particleCount: this.particleCount(),
         glyphCount: this.glyphCount(),
       });
-      this.drift = new HeroDriftField(this.bgEl, {
-        reducedMotion: this.reducedMotion,
-        mobile: this.mobile,
-        mouseEnabled: this.finePointer && !this.mobile && !this.reducedMotion,
-      });
+      this.drift = this.bgEl && this.bgEl.querySelector("[data-topo]")
+        ? null
+        : new HeroDriftField(this.bgEl, {
+            reducedMotion: this.reducedMotion,
+            mobile: this.mobile,
+            mouseEnabled: this.finePointer && !this.mobile && !this.reducedMotion,
+          });
       this.orbit = new CurrencyOrbit(this.stage, {
         reducedMotion: this.reducedMotion,
         onPulseArrive: () => this.receivePulse(),
@@ -490,11 +517,7 @@
       this.onScroll();
       this.loop = this.loop.bind(this);
       this.enter();
-      if (!this.reducedMotion) {
-        requestAnimationFrame(this.loop);
-      } else {
-        this.orbit.lines.draw(0, true);
-      }
+      requestAnimationFrame(this.loop);
     }
 
     particleCount() {
@@ -528,6 +551,10 @@
       const reveal = () => this.root.classList.add("is-ready");
       if (this.reducedMotion) {
         reveal();
+        return;
+      }
+      if (document.documentElement.classList.contains("fc-intro")) {
+        window.addEventListener("fc-intro-done", reveal, { once: true });
         return;
       }
       requestAnimationFrame(() => {
@@ -586,8 +613,8 @@
       this.root.style.setProperty("--orbit-expand", String(1 + progress * 0.28));
       this.root.style.setProperty("--logo-scale", String(1 - progress * 0.12));
       this.root.style.setProperty("--line-opacity", String(0.55 - progress * 0.35));
-      this.root.style.setProperty("--copy-shift", `${progress * -36}px`);
-      this.root.style.setProperty("--copy-fade", String(1 - progress * 0.42));
+      this.root.style.setProperty("--copy-shift", `${progress * -28}px`);
+      this.root.style.setProperty("--copy-fade", String(1 - progress * 0.78));
     }
 
     loop(time) {
@@ -609,6 +636,7 @@
       }
       this.background.setParallax(x, y);
       this.orbit.setNodeParallax(x, y);
+      this.orbit.tick(time);
       this.orbit.lines.draw(time, this.reducedMotion);
       if (this.drift) {
         const mouseOn =
@@ -633,8 +661,77 @@
     }
   }
 
-  const hero = document.getElementById("hero");
-  if (hero) {
-    new FintechHero(hero);
+  function splitHeroTitle() {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const hero = document.getElementById("hero");
+    const lines = document.querySelectorAll(".hero-copy h1 .reveal-line");
+    if (!lines.length) {
+      return;
+    }
+    if (hero) {
+      hero.classList.remove("is-ready");
+    }
+    lines.forEach((line) => {
+      if (line.querySelector(".hero-word")) {
+        line.textContent = Array.from(line.querySelectorAll(".hero-word"))
+          .map((word) => word.textContent)
+          .join(" ");
+      }
+    });
+    if (reduced) {
+      if (hero) {
+        hero.classList.add("is-ready");
+      }
+      return;
+    }
+    let delay = 0;
+    lines.forEach((line) => {
+      const text = line.textContent.trim();
+      if (!text) {
+        return;
+      }
+      line.textContent = "";
+      text.split(/\s+/).forEach((word) => {
+        const wrap = document.createElement("span");
+        wrap.className = "hero-word-wrap";
+        const inner = document.createElement("span");
+        inner.className = "hero-word";
+        inner.style.setProperty("--d", `${delay}ms`);
+        inner.textContent = word;
+        wrap.appendChild(inner);
+        line.appendChild(wrap);
+        line.appendChild(document.createTextNode(" "));
+        delay += 90;
+      });
+    });
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (hero) {
+          hero.classList.add("is-ready");
+        }
+      });
+    });
+  }
+
+  function bootHero() {
+    if (bootHero.done) {
+      return;
+    }
+    bootHero.done = true;
+    splitHeroTitle();
+    const hero = document.getElementById("hero");
+    if (hero) {
+      new FintechHero(hero);
+    }
+    document.querySelectorAll("[data-lang-switch]").forEach((button) => {
+      button.addEventListener("click", () => {
+        window.setTimeout(splitHeroTitle, 50);
+      });
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", bootHero);
+  if (document.readyState === "complete") {
+    bootHero();
   }
 })();
