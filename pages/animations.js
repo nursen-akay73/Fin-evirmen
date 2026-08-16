@@ -175,7 +175,7 @@
       return "#tools .card, #tools .results, .why-card";
     }
     if (document.querySelector(".how-page")) {
-      return ".bento-card, .why-card, .how-flow, .how-close";
+      return ".process-card, .why-card, .how-arch, .how-close";
     }
     if (document.querySelector(".compare-shell")) {
       return ".compare-intro, .compare-arena, .compare-actions";

@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {% include "_head.html" %}
     <title>İki sözleşmeyi karşılaştır — FinÇevirmen</title>
-    <link rel="stylesheet" href="/style.css?v=brand15" />
+    <link rel="stylesheet" href="/style.css?v=brand18" />
     <link rel="stylesheet" href="/hero.css?v=brand10" />
-    <link rel="stylesheet" href="/compare.css?v=cmp3" />
+    <link rel="stylesheet" href="/compare.css?v=cmp4" />
   </head>
   <body class="site-body compare-page" data-title-key="doc.title.compare">
     {% include "_nav.html" %}
@@ -80,15 +80,27 @@
       <section class="compare-result card" id="compare-result" hidden aria-live="polite">
         <div class="results-head">
           <h2 data-i18n="results">Sonuç</h2>
+          <div class="export-actions" id="compare-export" hidden>
+            <button type="button" class="export-btn is-gold" id="compare-pdf">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+              <span data-i18n="export.pdf">PDF raporu indir</span>
+            </button>
+            <button type="button" class="export-btn is-ghost" id="compare-share">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
+              <span data-i18n="export.share">Bağlantıyı paylaş</span>
+            </button>
+          </div>
         </div>
         <p id="compare-status" class="status"></p>
         <div id="compare-answer" class="answer" hidden></div>
       </section>
     </main>
     {% include "_footer.html" %}
+    {% include "_petition.html" %}
 
-    <script src="/i18n.js?v=brand16"></script>
+    <script src="/i18n.js?v=brand23"></script>
     <script src="/hero-wave.js?v=wave1" defer></script>
-    <script src="/compare.js?v=cmp2" defer></script>
+    <script src="/compare.js?v=cmp4" defer></script>
+    <script src="/features.js?v=ft4" defer></script>
   </body>
 </html>

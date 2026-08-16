@@ -6,6 +6,7 @@ from config import CONTRACT_SESSION_TTL
 
 _LOCK = threading.Lock()
 _SESSIONS: dict = {}
+_SHARES: dict = {}
 
 
 def _purge(now: float | None = None) -> None:
@@ -81,3 +82,37 @@ def session_history(session_id: str | None) -> list[dict]:
     if not session:
         return []
     return list(session.get("history") or [])
+
+
+def _purge_shares(now: float | None = None) -> None:
+    stamp = now if now is not None else time.time()
+    expired = [
+        key
+        for key, value in _SHARES.items()
+        if stamp - value.get("updated_at", 0) > CONTRACT_SESSION_TTL
+    ]
+    for key in expired:
+        _SHARES.pop(key, None)
+
+
+def put_share(payload: dict) -> str:
+    share_id = uuid.uuid4().hex[:12]
+    with _LOCK:
+        _purge_shares()
+        _SHARES[share_id] = {
+            "payload": payload,
+            "updated_at": time.time(),
+        }
+    return share_id
+
+
+def get_share(share_id: str | None) -> dict | None:
+    if not share_id:
+        return None
+    with _LOCK:
+        _purge_shares()
+        item = _SHARES.get(share_id)
+        if not item:
+            return None
+        item["updated_at"] = time.time()
+        return dict(item.get("payload") or {})

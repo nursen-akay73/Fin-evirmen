@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {% include "_head.html" %}
     <title>FinÇevirmen — Finansal dili sade Türkçeye çevir</title>
-    <link rel="stylesheet" href="/style.css?v=brand16" />
+    <link rel="stylesheet" href="/style.css?v=brand18" />
     <link rel="stylesheet" href="/hero.css?v=brand13" />
     <script>
       (function () {
@@ -112,13 +112,31 @@
                 <span class="mic-icon" aria-hidden="true"></span>
               </button>
             </div>
+            <div class="quick-prompts" role="list">
+              <button type="button" class="quick-chip" role="listitem" data-i18n="chip.min" data-q="Ekstredeki asgari tutarı ödersem ne kadar faiz biner?">
+                Ekstredeki asgari tutarı ödersem ne kadar faiz biner?
+              </button>
+              <button type="button" class="quick-chip" role="listitem" data-i18n="chip.fee" data-q="Kredi kartı aidatı yasal mı, nasıl iptal edilir?">
+                Kredi kartı aidatı yasal mı, nasıl iptal edilir?
+              </button>
+              <button type="button" class="quick-chip" role="listitem" data-i18n="chip.early" data-q="Konut kredisinde erken ödeme cezası var mı?">
+                Konut kredisinde erken ödeme cezası var mı?
+              </button>
+              <button type="button" class="quick-chip" role="listitem" data-i18n="chip.withdraw" data-q="Kredide cayma hakkı kaç gündür?">
+                Kredide cayma hakkı kaç gündür?
+              </button>
+            </div>
             <p id="mic-status" class="mic-status" hidden></p>
             <button type="submit" id="ask-button" data-i18n="ask.submit">Açıkla</button>
           </form>
         </section>
 
-        <section class="card" id="contract" aria-labelledby="upload-title">
+        <section class="card" id="contract" aria-labelledby="upload-title" data-mode="contract">
           <h2 id="upload-title" data-i18n="contract.title">Sözleşme çözümleyici</h2>
+          <div class="tool-tabs" role="tablist">
+            <button type="button" class="tool-tab is-on" data-tab="contract" data-i18n="contract.tab">Sözleşme oku</button>
+            <button type="button" class="tool-tab" data-tab="statement" data-i18n="statement.tab">Ekstre / dekont tara</button>
+          </div>
           <p class="hint" data-i18n="contract.hint">
             Kredi veya kredi kartı sözleşmesi PDF'i yükleyin. Faiz, ceza ve
             iptal maddeleri özetlenir.
@@ -206,11 +224,13 @@
     </div>
     {% include "_why.html" %}
     {% include "_footer.html" %}
-    <script src="/i18n.js?v=brand17"></script>
+    {% include "_petition.html" %}
+    <script src="/i18n.js?v=brand23"></script>
     <script src="/intro.js?v=in1" defer></script>
     <script src="/hero.js?v=brand9" defer></script>
     <script src="/topo-field.js?v=topo4" defer></script>
     <script type="module" src="/hero-app.js?v=kb1"></script>
-    <script src="/script.js?v=brand10" defer></script>
+    <script src="/script.js?v=brand13" defer></script>
+    <script src="/features.js?v=ft4" defer></script>
   </body>
 </html>

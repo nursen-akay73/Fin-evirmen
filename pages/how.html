@@ -5,101 +5,104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {% include "_head.html" %}
     <title>Sistem nasıl çalışıyor — FinÇevirmen</title>
-    <link rel="stylesheet" href="/style.css?v=brand16" />
-    <link rel="stylesheet" href="/how-it-works.css?v=how9" />
+    <link rel="stylesheet" href="/style.css?v=brand18" />
+    <link rel="stylesheet" href="/how-it-works.css?v=how10" />
   </head>
   <body class="site-body story-page" data-title-key="doc.title.how">
     {% include "_nav.html" %}
     <main class="story how-page">
-      <h1 class="sr-only" data-i18n="story.h1">Sistem nasıl çalışıyor</h1>
+      <header class="how-intro">
+        <p class="story-eyebrow" data-i18n="story.steps.eyebrow">Üç adım</p>
+        <h1 data-i18n="story.h1">Sistem nasıl çalışıyor</h1>
+        <p class="story-lede" data-i18n="story.steps.lede">
+          Genel bir sohbet modeli değil: sorunuzu veya belgenizi alır, resmi kaynakta arar,
+          sade Türkçe ve risk notuyla döner.
+        </p>
+      </header>
 
-      <section class="bento" aria-label="Sistem nasıl çalışıyor">
-        <article class="bento-card is-wide">
-          <p class="bento-kicker" data-i18n="bento.k1">01 · Vektör arama</p>
-          <h2 data-i18n="bento.t1">Embedding ve yakınlık araması</h2>
-          <p data-i18n="bento.p1">
-            Soru 384 boyutlu bir vektöre çevrilir. Neon + pgvector en yakın parçaları bulur, reranker en uygun üçünü seçer.
-          </p>
-          <pre class="bento-code" aria-hidden="true">query → embed(384d)
-neon  → cosine top-k
-rerank → top 3 passages</pre>
-        </article>
-        <article class="bento-card is-tall">
-          <p class="bento-kicker" data-i18n="bento.k2">02 · Uydurmaz</p>
-          <h2 data-i18n="bento.t2">Hallucination-free RAG</h2>
-          <p data-i18n="bento.p2">
-            Model yalnız bulunan metne bakar. Parça yoksa “bağlamda yok” der; dışarıdan bilgi eklemez.
-          </p>
-          <div class="bento-pills">
-            <span class="badge is-low" data-i18n="bento.pill.grounded">Kaynağa bağlı</span>
-            <span class="badge is-watch" data-i18n="bento.pill.missing">Yoksa söyler</span>
-          </div>
-        </article>
-        <article class="bento-card is-wide">
-          <p class="bento-kicker" data-i18n="bento.k3">03 · Mevzuat</p>
-          <h2 data-i18n="bento.t3">Sözlük ve güncel madde eşleşmesi</h2>
-          <p data-i18n="bento.p3">
-            Terimler, BDDK ve tüketici metinleriyle eşleşir. Cevabın yanında madde ve kaynak görünür.
-          </p>
-          <div class="bento-pills">
-            <span class="badge is-topic" data-i18n="bento.pill.bddk">BDDK</span>
-            <span class="badge is-topic" data-i18n="bento.pill.tkhk">Tüketici Kanunu</span>
-          </div>
-        </article>
-      </section>
+      <ol class="process-track" aria-label="Süreç">
+        <li class="process-card">
+          <span class="process-num">01</span>
+          <span class="process-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" x2="12" y1="19" y2="22"/>
+            </svg>
+          </span>
+          <h2 data-i18n="story.step1.t">Sorunu sor veya belgeni yükle</h2>
+          <p data-i18n="story.step1.p">Mikrofon, yazı veya PDF. Girdi sizin; sistem ezberlemez.</p>
+        </li>
+        <li class="process-card">
+          <span class="process-num">02</span>
+          <span class="process-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.3-4.3"/>
+              <path d="M11 8v6"/>
+              <path d="M8 11h6"/>
+            </svg>
+          </span>
+          <h2 data-i18n="story.step2.t">Resmi mevzuat ve belge taraması</h2>
+          <p data-i18n="story.step2.p">Doğrulanmış RAG motoru sözlük, BDDK metni ve yüklediğiniz sözleşmeyi tarar.</p>
+        </li>
+        <li class="process-card">
+          <span class="process-num">03</span>
+          <span class="process-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/>
+              <path d="M14 2v6h6"/>
+              <path d="M16 13H8"/>
+              <path d="M16 17H8"/>
+              <path d="M10 9H8"/>
+            </svg>
+          </span>
+          <h2 data-i18n="story.step3.t">Sade Türkçe ve risk analiz raporu</h2>
+          <p data-i18n="story.step3.p">Kaynaklı, uydurmasız sonuç. Kritik maddeler risk etiketiyle öne çıkar.</p>
+        </li>
+      </ol>
 
       {% include "_why.html" %}
 
-      <section class="how-flow" aria-labelledby="flow-title">
-        <p class="story-eyebrow" data-i18n="story.flow.eyebrow">Akış</p>
-        <h2 id="flow-title" data-i18n="story.flow.title">Soru cevaba nasıl gider</h2>
-        <p class="how-section-lede" data-i18n="story.flow.lede">
-          Genel bir sohbet modeli değil: önce arar, sonra yalnızca bulduğunu anlatır.
-        </p>
-
-        <div class="flow-board">
-          <ol class="flow-row">
-            <li class="flow-node">
-              <span class="flow-kicker" data-i18n="story.flow.k1">Girdi</span>
-              <strong data-i18n="story.flow.n1">Yazı veya ses</strong>
-              <span data-i18n="story.flow.p1">Soru yazılır ya da mikrofonla söylenir.</span>
-            </li>
-            <li class="flow-join" aria-hidden="true"></li>
-            <li class="flow-node">
-              <span class="flow-kicker" data-i18n="story.flow.k2">Çeviri</span>
-              <strong data-i18n="story.flow.n2">Sayıya dönüş</strong>
-              <span data-i18n="story.flow.p2">Metin, benzerliği ölçen bir vektöre çevrilir.</span>
-            </li>
-            <li class="flow-join" aria-hidden="true"></li>
-            <li class="flow-node">
-              <span class="flow-kicker" data-i18n="story.flow.k3">Arama</span>
-              <strong data-i18n="story.flow.n3">Sözlük ve belgeler</strong>
-              <span data-i18n="story.flow.p3">En yakın parçalar bulunur, en uygun üçü seçilir.</span>
-            </li>
-          </ol>
-
-          <div class="flow-down" aria-hidden="true"></div>
-
-          <div class="flow-node is-decide">
-            <span class="flow-kicker" data-i18n="story.flow.k4">Karar</span>
-            <strong data-i18n="story.flow.n4">Parça bulundu mu?</strong>
-            <span data-i18n="story.flow.p4">Yoksa model dışarıdan bilgi eklemez.</span>
-          </div>
-
-          <div class="flow-fork">
-            <article class="flow-node is-yes">
-              <span class="flow-kicker" data-i18n="story.flow.yes">Evet</span>
-              <strong data-i18n="story.flow.n5">Sade cevap + kaynak</strong>
-              <span data-i18n="story.flow.p5">Model yalnız o parçalara bakarak anlatır.</span>
+      <details class="how-arch">
+        <summary data-i18n="story.arch.summary">Teknik mimariyi incele (geliştiriciler için)</summary>
+        <div class="how-arch-body">
+          <section class="bento" aria-label="Teknik mimari">
+            <article class="bento-card is-wide">
+              <p class="bento-kicker" data-i18n="bento.k1">01 · Vektör arama</p>
+              <h2 data-i18n="bento.t1">Embedding ve yakınlık araması</h2>
+              <p data-i18n="bento.p1">
+                Soru 384 boyutlu bir vektöre çevrilir. Neon + pgvector en yakın parçaları bulur, reranker en uygun üçünü seçer.
+              </p>
+              <pre class="bento-code" aria-hidden="true">query → embed(384d)
+neon  → cosine top-k
+rerank → top 3 passages</pre>
             </article>
-            <article class="flow-node is-no">
-              <span class="flow-kicker" data-i18n="story.flow.no">Hayır</span>
-              <strong data-i18n="story.flow.n6">Bağlamda yok</strong>
-              <span data-i18n="story.flow.p6">Uydurmaz; bilmediğini açıkça söyler.</span>
+            <article class="bento-card is-tall">
+              <p class="bento-kicker" data-i18n="bento.k2">02 · Uydurmaz</p>
+              <h2 data-i18n="bento.t2">Hallucination-free RAG</h2>
+              <p data-i18n="bento.p2">
+                Model yalnız bulunan metne bakar. Parça yoksa “bağlamda yok” der; dışarıdan bilgi eklemez.
+              </p>
+              <div class="bento-pills">
+                <span class="badge is-low" data-i18n="bento.pill.grounded">Kaynağa bağlı</span>
+                <span class="badge is-watch" data-i18n="bento.pill.missing">Yoksa söyler</span>
+              </div>
             </article>
-          </div>
+            <article class="bento-card is-wide">
+              <p class="bento-kicker" data-i18n="bento.k3">03 · Mevzuat</p>
+              <h2 data-i18n="bento.t3">Sözlük ve güncel madde eşleşmesi</h2>
+              <p data-i18n="bento.p3">
+                Terimler, BDDK ve tüketici metinleriyle eşleşir. Cevabın yanında madde ve kaynak görünür.
+              </p>
+              <div class="bento-pills">
+                <span class="badge is-topic" data-i18n="bento.pill.bddk">BDDK</span>
+                <span class="badge is-topic" data-i18n="bento.pill.tkhk">Tüketici Kanunu</span>
+              </div>
+            </article>
+          </section>
         </div>
-      </section>
+      </details>
 
       <footer class="how-close">
         <p data-i18n="story.close">Uydurmaz. Kaynak gösterir.</p>
@@ -107,6 +110,6 @@ rerank → top 3 passages</pre>
       </footer>
     </main>
     {% include "_footer.html" %}
-    <script src="/i18n.js?v=brand17"></script>
+    <script src="/i18n.js?v=brand22"></script>
   </body>
 </html>

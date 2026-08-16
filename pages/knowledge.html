@@ -4,14 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {% include "_head.html" %}
-    <title>Bilgi tabanına ekle — FinÇevirmen</title>
-    <link rel="stylesheet" href="/style.css?v=brand15" />
+    <title>Kişisel doküman ve bilgi kütüphanesi — FinÇevirmen</title>
+    <link rel="stylesheet" href="/style.css?v=brand18" />
   </head>
   <body class="site-body inner-body" data-title-key="doc.title.kb">
     {% include "_nav.html" %}
     <div class="page">
       <section class="card knowledge-card" id="knowledge" aria-labelledby="kb-title">
-        <h2 id="kb-title" data-i18n="kb.title">Bilgi tabanına ekle</h2>
+        <h2 id="kb-title" data-i18n="kb.title">Kişisel doküman ve bilgi kütüphanesi</h2>
         <p class="hint" data-i18n="kb.hint">
           Eklediğiniz terim, belge ve görüntüler Neon’a yazılır. Sonraki
           sorularda RAG bunları da arar.
@@ -44,9 +44,13 @@
             <p class="bento-kicker" data-i18n="kb.docKicker">Vektörleştir</p>
             <h3 data-i18n="kb.doc">Belge ekle</h3>
             <p class="hint" data-i18n="kb.docHint">PDF, TXT veya MD. Metin parçalanıp vektör olarak saklanır.</p>
-            <label class="file-label">
-              <input id="kb-doc-file" type="file" accept=".pdf,.txt,.md,application/pdf,text/plain" required />
-              <span id="kb-doc-name" data-i18n="kb.docPick">PDF veya metin seçin</span>
+            <label class="file-label drop-zone">
+              <input id="kb-doc-file" type="file" accept=".pdf,.txt,.md,application/pdf,text/plain" multiple />
+              <span class="drop-zone-copy">
+                <span class="drop-zone-icon" aria-hidden="true"></span>
+                <strong id="kb-doc-name" data-i18n="kb.docPick">PDF veya metin seçin</strong>
+                <em data-i18n="kb.dropHint">Sürükleyip bırakın veya tıklayın</em>
+              </span>
             </label>
             <button type="submit" id="doc-button" data-i18n="kb.docBtn">Belgeyi ekle</button>
           </form>
@@ -55,13 +59,18 @@
             <p class="bento-kicker" data-i18n="kb.imgKicker">OCR</p>
             <h3 data-i18n="kb.img">Görüntü ekle</h3>
             <p class="hint" data-i18n="kb.imgHint">Dekont, ekstre veya sözleşme fotoğrafı. Metin okunup eklenir.</p>
-            <label class="file-label">
-              <input id="kb-image-file" type="file" accept="image/png,image/jpeg,image/webp" required />
-              <span id="kb-image-name" data-i18n="kb.imgPick">Görüntü seçin</span>
+            <label class="file-label drop-zone">
+              <input id="kb-image-file" type="file" accept="image/png,image/jpeg,image/webp" multiple />
+              <span class="drop-zone-copy">
+                <span class="drop-zone-icon is-image" aria-hidden="true"></span>
+                <strong id="kb-image-name" data-i18n="kb.imgPick">Görüntü seçin</strong>
+                <em data-i18n="kb.dropHint">Sürükleyip bırakın veya tıklayın</em>
+              </span>
             </label>
             <button type="submit" id="image-button" data-i18n="kb.imgBtn">Görüntüyü ekle</button>
           </form>
         </div>
+        <ul id="kb-queue" class="kb-queue" hidden></ul>
       </section>
 
       <section class="results card" aria-live="polite">
@@ -84,7 +93,7 @@
       </section>
     </div>
     {% include "_footer.html" %}
-    <script src="/i18n.js?v=brand16"></script>
-    <script src="/script.js?v=brand10" defer></script>
+    <script src="/i18n.js?v=brand22"></script>
+    <script src="/script.js?v=brand13" defer></script>
   </body>
 </html>

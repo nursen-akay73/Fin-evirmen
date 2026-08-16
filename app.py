@@ -1,11 +1,12 @@
 from io import BytesIO
 from datetime import date
 from pathlib import Path
+from urllib.request import Request, urlopen
 import json
 import re
 
 import pdfplumber
-from flask import Flask, jsonify, make_response, redirect, render_template, request, send_from_directory
+from flask import Flask, jsonify, make_response, redirect, render_template, request, send_file, send_from_directory
 
 from config import (
     CONTRACT_MAX_CHUNKS_PER_DOC,
@@ -22,17 +23,21 @@ from rag.llm_client import (
     generate_answer,
     transcribe_audio,
 )
-from rag.retrieval import retrieve_chunks
+from rag.retrieval import retrieve_chunks, legal_basis_line
 from rag.reranker import warmup_reranker
 from rag.session_store import (
     append_history,
+    get_share,
     new_session_id,
     put_docs,
+    put_share,
     session_chunks,
     session_docs,
     session_history,
 )
 from rag.store import count_chunks, ensure_regulation_columns, insert_chunks, list_glossary
+from rag.petitions import build_petition_draft, petition_query
+from rag.exports import compare_pdf, petition_pdf
 
 from modules.revenue_engine.api import revenue_bp
 
@@ -67,11 +72,32 @@ def request_lang(payload=None) -> str:
     return "en" if raw.strip().lower().startswith("en") else "tr"
 
 
-def _snippet(text: str, limit: int = 420) -> str:
-    snippet = " ".join((text or "").split())
+_SNIPPET_SKIP = (
+    "[Kaynak:",
+    "Dosya:",
+    "Sayfa:",
+    "Belge:",
+    "Madde:",
+    "Kategori:",
+    "Terim:",
+)
+
+
+def _snippet(text: str, limit: int = 280) -> str:
+    lines = []
+    for line in (text or "").splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if any(stripped.startswith(prefix) for prefix in _SNIPPET_SKIP):
+            continue
+        lines.append(stripped)
+    snippet = " ".join(lines)
+    snippet = " ".join(snippet.split())
     if len(snippet) <= limit:
         return snippet
-    return snippet[:limit].rstrip() + "…"
+    clipped = snippet[: limit - 1].rsplit(" ", 1)[0]
+    return (clipped or snippet[:limit]).rstrip() + "…"
 
 
 def _chunk_source(chunk: dict) -> dict:
@@ -219,9 +245,19 @@ def ask():
         answer = generate_answer(
             question,
             [chunk["content"] for chunk in chunks],
+            extra_instructions=(
+                "If the context contains official statute text, end with one line: "
+                "'📌 Legal basis: ...' using only article numbers in the context."
+                if lang == "en"
+                else "Bağlamda resmi mevzuat varsa cevabın sonuna tek satır ekle: "
+                "'📌 Yasal Dayanak: ...' Yalnızca bağlamdaki kanun/tebliğ ve madde numarasını yaz; uydurma."
+            ),
             last_updated_dates=[chunk.get("last_updated_date") for chunk in chunks],
             language=lang,
         )
+        basis = legal_basis_line(chunks, language=lang)
+        if basis and "Yasal Dayanak" not in answer and "Legal basis" not in answer:
+            answer = answer.rstrip() + "\n\n" + basis
         sources = [_chunk_source(chunk) for chunk in chunks]
         return jsonify({"answer": answer, "sources": sources})
     except Exception as error:
@@ -362,7 +398,8 @@ def upload_contract():
                 "Do not invent any rate or penalty that is not written in the contract. "
                 "Write only items as '1. **Title**: [Standard] explanation' or "
                 "'1. **Title**: [Attention] explanation'. "
-                "Use [Attention] for high penalties/interest, harsh acceleration, or surprising terms."
+                "Use [Attention] for high penalties/interest, harsh acceleration, or surprising terms. "
+                "If statute passages are in the context, add 📌 Legal basis with those article numbers only."
             )
             contract_prompt = CONTRACT_SYSTEM_PROMPT_EN
         else:
@@ -376,7 +413,8 @@ def upload_contract():
                 "Sözleşmede yazmayan hiçbir oran veya ceza uydurma. "
                 "Çıktıyı yalnızca '1. **Başlık**: [Standart] açıklama' veya "
                 "'1. **Başlık**: [Dikkat] açıklama' maddeleri olarak yaz. "
-                "Yüksek ceza/faiz, ağır muacceliyet veya şaşırtıcı şart için [Dikkat] kullan."
+                "Yüksek ceza/faiz, ağır muacceliyet veya şaşırtıcı şart için [Dikkat] kullan. "
+                "Bağlamda mevzuat varsa ilgili [Dikkat] maddesine 📌 Yasal Dayanak satırı ekle; madde uydurma."
             )
             contract_prompt = CONTRACT_SYSTEM_PROMPT
         answer = generate_answer(
@@ -387,6 +425,9 @@ def upload_contract():
             last_updated_dates=[item.get("last_updated_date") for item in glossary],
             language=lang,
         )
+        basis = legal_basis_line(glossary, language=lang)
+        if basis and "Yasal Dayanak" not in answer and "Legal basis" not in answer:
+            answer = answer.rstrip() + "\n\n" + basis
         sources = [_chunk_source(chunk) for chunk in all_chunks]
         sources.extend(_chunk_source(item) for item in glossary)
         return _json_with_sid(
@@ -521,34 +562,49 @@ def contract_ask():
         return jsonify({"error": error}), 400
     try:
         chunks = retrieve_chunks(question, limit=3, corpus=corpus)
-        context = [
+        law = [
+            item
+            for item in retrieve_chunks(question, limit=3)
+            if item.get("source_type") == "mevzuat"
+        ][:2]
+        context = [item.get("content") or "" for item in law] + [
             f"[Dosya: {chunk.get('source_name')} | Sayfa {chunk.get('page_number')}]\n{chunk.get('content')}"
             for chunk in chunks
         ]
         if lang == "en":
             system = (
-                "You answer questions only from the uploaded contract excerpts. "
-                "Do not use outside knowledge. If it is not in the excerpts, say so. "
+                "Answer from the uploaded contract excerpts. You may cite official statute "
+                "passages if they are in the context. If a fact is not in the excerpts, say so. "
                 "End with a source line like 'Source: [filename - Page 4]'."
             )
         else:
             system = (
-                "Yalnızca yüklenen sözleşme parçalarına bakarak cevap ver. "
-                "Genel bilgi tabanını veya dış bilgiyi kullanma. Parçada yoksa 'bağlamda yok' de. "
+                "Yüklenen sözleşme parçalarına bakarak cevap ver. Bağlamda resmi mevzuat varsa "
+                "yasal dayanağı belirt. Sözleşmede yoksa 'bağlamda yok' de. "
                 "Cevabın sonunda 'Kaynak: [dosya adı - Sayfa 4]' satırı olsun."
             )
         answer = generate_answer(
             question,
             context,
+            extra_instructions=(
+                "If statute passages are in the context, add 📌 Legal basis with those article numbers only."
+                if lang == "en"
+                else "Bağlamda resmi mevzuat varsa 📌 Yasal Dayanak satırı ekle; madde uydurma."
+            ),
             system_prompt=system,
             language=lang,
             history=session_history(session_id),
         )
+        basis = legal_basis_line(law, language=lang)
+        if basis and "Yasal Dayanak" not in answer and "Legal basis" not in answer:
+            answer = answer.rstrip() + "\n\n" + basis
         append_history(session_id, question, answer)
+        sources = [_chunk_source(chunk) for chunk in chunks]
+        sources.extend(_chunk_source(item) for item in law)
         return _json_with_sid(
             {
                 "answer": answer,
-                "sources": [_chunk_source(chunk) for chunk in chunks],
+                "sources": sources,
                 "privacy": _privacy_note(lang),
             },
             session_id,
@@ -557,11 +613,328 @@ def contract_ask():
         return jsonify({"error": f"Soru yanıtlanamadı: {error}"}), 500
 
 
+def _pdf_response(payload: bytes, filename: str):
+    return send_file(
+        BytesIO(payload),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=filename,
+    )
+
+
+@app.post("/api/compare/share")
+def compare_share():
+    payload = request.get_json(silent=True) or {}
+    lang = request_lang(payload)
+    rows = payload.get("rows") or []
+    filenames = payload.get("filenames") or []
+    if not isinstance(rows, list) or not rows:
+        error = "No comparison to share." if lang == "en" else "Paylaşılacak karşılaştırma yok."
+        return jsonify({"error": error}), 400
+    share_id = put_share(
+        {"filenames": filenames, "rows": rows, "lang": lang}
+    )
+    url = request.host_url.rstrip("/") + "/karsilastir?id=" + share_id
+    return jsonify({"id": share_id, "url": url})
+
+
+@app.get("/api/compare/share/<share_id>")
+def compare_share_get(share_id):
+    data = get_share(share_id)
+    if not data:
+        error = (
+            "This link has expired."
+            if request_lang() == "en"
+            else "Bu bağlantının süresi dolmuş."
+        )
+        return jsonify({"error": error}), 404
+    return jsonify(data)
+
+
+@app.post("/api/compare/export")
+def compare_export():
+    payload = request.get_json(silent=True) or {}
+    lang = request_lang(payload)
+    rows = payload.get("rows") or []
+    filenames = payload.get("filenames") or []
+    if not isinstance(rows, list) or not rows:
+        error = "No comparison to export." if lang == "en" else "İndirilecek karşılaştırma yok."
+        return jsonify({"error": error}), 400
+    try:
+        pdf_bytes = compare_pdf(filenames, rows, lang=lang)
+        name = "fincevirmen-comparison.pdf" if lang == "en" else "fincevirmen-karsilastirma.pdf"
+        return _pdf_response(pdf_bytes, name)
+    except Exception as error:
+        return jsonify({"error": f"PDF oluşturulamadı: {error}"}), 500
+
+
+_DISTRICT_CACHE = None
+DISTRICTS_URLS = (
+    "https://api.turkiyeapi.dev/v1/provinces",
+    "https://turkiyeapi.dev/api/v1/provinces",
+)
+
+
+def _parse_province_payload(payload) -> dict[str, list[str]]:
+    rows = payload
+    if isinstance(payload, dict):
+        rows = payload.get("data") or payload.get("provinces") or []
+    mapping = {}
+    if not isinstance(rows, list):
+        return mapping
+    for item in rows:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name") or item.get("il") or "").strip()
+        raw = item.get("districts") or item.get("ilceler") or []
+        districts = []
+        for entry in raw:
+            if isinstance(entry, str):
+                label = entry.strip()
+            elif isinstance(entry, dict):
+                label = str(entry.get("name") or entry.get("ilce") or "").strip()
+            else:
+                label = ""
+            if label and label not in districts:
+                districts.append(label)
+        if name and districts:
+            mapping[name] = districts
+    return mapping
+
+
+@app.get("/api/districts")
+def districts():
+    global _DISTRICT_CACHE
+    if _DISTRICT_CACHE:
+        return jsonify({"provinces": _DISTRICT_CACHE})
+    last_error = ""
+    for url in DISTRICTS_URLS:
+        try:
+            request_obj = Request(url, headers={"User-Agent": "FinCevirmen/1.0"})
+            with urlopen(request_obj, timeout=10) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+            mapping = _parse_province_payload(payload)
+            if mapping:
+                _DISTRICT_CACHE = mapping
+                return jsonify({"provinces": mapping})
+        except Exception as error:
+            last_error = str(error)
+    return jsonify({"error": last_error or "İl/ilçe listesi alınamadı.", "provinces": {}}), 503
+
+
+@app.post("/api/petition")
+def petition():
+    payload = request.get_json(silent=True) or {}
+    lang = request_lang(payload)
+    topic = (payload.get("topic") or "kart aidatı").strip()[:180]
+    clause = (payload.get("clause") or "").strip()[:1200]
+    bank = (payload.get("bank") or "").strip()[:120] or "........................"
+    letter_date = (payload.get("date") or "").strip()[:20] or date.today().isoformat()
+    place = (payload.get("place") or "").strip()[:80] or "................"
+    query = petition_query(topic, clause)
+    try:
+        chunks = retrieve_chunks(query, limit=4)
+        draft = build_petition_draft(
+            topic, clause, bank, letter_date, lang=lang, place=place
+        )
+        refs = list(draft["law_refs"])
+        for chunk in chunks:
+            bit = " ".join(
+                part
+                for part in (
+                    chunk.get("regulation_source") or "",
+                    chunk.get("regulation_reference") or "",
+                )
+                if part
+            ).strip()
+            if bit and bit not in refs:
+                refs.append(bit)
+        draft["law_refs"] = refs
+        basis = legal_basis_line(chunks, language=lang)
+        if basis:
+            draft["body"] = draft["body"].rstrip() + "\n\n" + basis
+        return jsonify(
+            {
+                **draft,
+                "sources": [_chunk_source(chunk) for chunk in chunks],
+            }
+        )
+    except Exception as error:
+        return jsonify({"error": f"Dilekçe üretilemedi: {error}"}), 500
+
+
+@app.post("/api/petition/pdf")
+def petition_download():
+    payload = request.get_json(silent=True) or {}
+    lang = request_lang(payload)
+    try:
+        pdf_bytes = petition_pdf(
+            bank=str(payload.get("bank") or ""),
+            letter_date=str(payload.get("date") or date.today().isoformat()),
+            title=str(payload.get("title") or ""),
+            body=str(payload.get("body") or ""),
+            law_refs=list(payload.get("law_refs") or []),
+            lang=lang,
+        )
+        name = "fincevirmen-dilekce.pdf" if lang != "en" else "fincevirmen-petition.pdf"
+        return _pdf_response(pdf_bytes, name)
+    except Exception as error:
+        return jsonify({"error": f"PDF oluşturulamadı: {error}"}), 500
+
+
+def _keyword_flags(text: str, lang: str) -> list[dict]:
+    raw = text or ""
+    lower = raw.lower()
+    flags = []
+    if "aidat" in lower:
+        flags.append(
+            {
+                "level": "high",
+                "title": "Annual card fee" if lang == "en" else "Yıllık kart aidatı",
+                "detail": (
+                    "A card-fee line was found. It may be challengeable under consumer rules."
+                    if lang == "en"
+                    else "Aidat kesintisi satırı bulundu. Tüketici mevzuatı çerçevesinde itiraz edilebilir."
+                ),
+                "topic": "kart aidatı",
+            }
+        )
+    if "nakit avans" in lower or "cash advance" in lower:
+        flags.append(
+            {
+                "level": "watch",
+                "title": "Cash advance / default interest" if lang == "en" else "Nakit avans / gecikme faizi",
+                "detail": (
+                    "A cash-advance or late-interest line was found. Check the rate on the statement."
+                    if lang == "en"
+                    else "Nakit avans veya gecikme faizi satırı bulundu. Ekstredeki oranı kontrol edin."
+                ),
+                "topic": "nakit avans",
+            }
+        )
+    if "gecikme faiz" in lower or "default interest" in lower:
+        flags.append(
+            {
+                "level": "watch",
+                "title": "Late interest" if lang == "en" else "Gecikme faizi",
+                "detail": (
+                    "Late-interest wording was found."
+                    if lang == "en"
+                    else "Gecikme faizi ifadesi bulundu. Asgari ödeme sonrası işletilen oranı doğrulayın."
+                ),
+                "topic": "gecikme faizi",
+            }
+        )
+    if any(word in lower for word in ("dosya masraf", "sigorta", "komisyon", "hizmet bedel")):
+        flags.append(
+            {
+                "level": "info",
+                "title": "Extra fees" if lang == "en" else "Ek masraflar",
+                "detail": (
+                    "File fees, insurance or commission lines were found."
+                    if lang == "en"
+                    else "Dosya masrafı, sigorta veya komisyon satırı bulundu."
+                ),
+                "topic": "ek masraf",
+            }
+        )
+    return flags
+
+
+@app.post("/api/statement/scan")
+def statement_scan():
+    lang = request_lang()
+    uploaded = request.files.get("file")
+    if uploaded is None or not uploaded.filename:
+        error = "Please upload a PDF or image." if lang == "en" else "PDF veya görüntü yükleyin."
+        return jsonify({"error": error}), 400
+    name = uploaded.filename.lower()
+    extracted = ""
+    try:
+        raw = uploaded.read()
+        if name.endswith(".pdf") or (uploaded.mimetype or "").endswith("pdf"):
+            with pdfplumber.open(BytesIO(raw)) as pdf:
+                extracted = "\n\n".join(page.extract_text() or "" for page in pdf.pages).strip()
+        else:
+            mime_type = (uploaded.mimetype or "image/jpeg").split(";")[0].strip().lower()
+            if mime_type not in ALLOWED_IMAGE_TYPES:
+                error = "PNG, JPG, WEBP or PDF." if lang == "en" else "PNG, JPG, WEBP veya PDF yükleyin."
+                return jsonify({"error": error}), 400
+            extracted = extract_text_from_image(raw, mime_type) or ""
+        if not extracted.strip():
+            error = (
+                "No text could be read from this file."
+                if lang == "en"
+                else "Bu dosyadan okunabilir metin çıkarılamadı."
+            )
+            return jsonify({"error": error}), 400
+        preview = extracted[:4000]
+        glossary = retrieve_chunks(preview[:800], limit=3)
+        context = [item.get("content") or "" for item in glossary] + [preview]
+        if lang == "en":
+            question = "Find hidden fees, annual card fees, cash-advance and late-interest lines on this statement."
+            extra = (
+                "Return ONLY JSON: "
+                '{"flags":[{"level":"high|watch|info","title":"...","detail":"...","topic":"..."}]} . '
+                "Do not invent amounts that are not in the text."
+            )
+            system = "You scan bank statements. Use only the given text. JSON only."
+        else:
+            question = (
+                "Bu ekstre/dekontta gizli masraf, yıllık kart aidatı, nakit avans ve gecikme faizi satırlarını bul."
+            )
+            extra = (
+                "Yalnızca JSON döndür: "
+                '{"flags":[{"level":"high|watch|info","title":"...","detail":"...","topic":"..."}]} . '
+                "Metinde yazmayan tutarı uydurma."
+            )
+            system = "Banka ekstresi tararsın. Yalnızca verilen metni kullan. Sadece JSON."
+        raw_answer = generate_answer(
+            question,
+            context,
+            extra_instructions=extra,
+            system_prompt=system,
+            language=lang,
+        )
+        parsed = _parse_json_payload(raw_answer) or {}
+        flags = parsed.get("flags") if isinstance(parsed, dict) else None
+        clean = []
+        if isinstance(flags, list):
+            for item in flags:
+                if not isinstance(item, dict):
+                    continue
+                level = str(item.get("level") or "info")
+                if level not in {"high", "watch", "info"}:
+                    level = "info"
+                clean.append(
+                    {
+                        "level": level,
+                        "title": str(item.get("title") or "")[:160],
+                        "detail": str(item.get("detail") or "")[:500],
+                        "topic": str(item.get("topic") or "ek masraf")[:80],
+                    }
+                )
+        if not clean:
+            clean = _keyword_flags(extracted, lang)
+        basis = legal_basis_line(glossary, language=lang)
+        return jsonify(
+            {
+                "filename": uploaded.filename,
+                "flags": clean,
+                "legal_basis": basis,
+                "sources": [_chunk_source(item) for item in glossary],
+            }
+        )
+    except Exception as error:
+        return jsonify({"error": f"Ekstre taranamadı: {error}"}), 500
+
+
 SOURCE_LABELS = {
     "terim_sozlugu": "terim sözlüğü",
     "sozlesme_maddesi": "sözleşme maddesi",
     "tuketici_rehberi": "tüketici rehberi",
     "sozlesme_referans": "sözleşme referansı",
+    "mevzuat": "resmi mevzuat",
     "kullanici_terim": "sizin eklediğiniz terim",
     "kullanici_belge": "yüklediğiniz belge",
     "kullanici_gorsel": "yüklediğiniz görüntü",

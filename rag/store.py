@@ -187,6 +187,7 @@ def list_glossary(
                     "source_type": row[0],
                     "name": row[1],
                     "preview": _glossary_preview(row[2]),
+                    "detail": _glossary_preview(row[2], 1800),
                     "regulation_source": row[3],
                     "last_updated_date": updated.isoformat() if updated else None,
                     "regulation_reference": row[5],

@@ -389,11 +389,26 @@
 
 .cite-list summary {
   cursor: pointer;
-  padding: 12px 14px;
-  font-size: 0.86rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 14px;
+  font-size: 0.84rem;
   font-weight: 600;
   color: #e2e8f0;
   list-style: none;
+}
+
+.cite-list summary::after {
+  content: "▾";
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.cite-list details[open] summary::after {
+  transform: rotate(180deg);
 }
 
 .cite-list summary::-webkit-details-marker {
@@ -402,12 +417,12 @@
 
 .cite-snippet {
   margin: 0;
-  padding: 0 14px 14px;
-  color: #cbd5e1;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.78rem;
-  line-height: 1.6;
-  white-space: pre-wrap;
+  padding: 0 14px 12px;
+  color: #94a3b8;
+  font-family: var(--font);
+  font-size: 0.8rem;
+  font-weight: 400;
+  line-height: 1.55;
 }
 
 .compare-cards {

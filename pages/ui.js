@@ -87,12 +87,66 @@
     next();
   }
 
+  function pageNumber(source) {
+    if (source.page_number) {
+      return source.page_number;
+    }
+    var match = String(source.source_name || "").match(/Sayfa\s+(\d+)/i);
+    return match ? match[1] : "";
+  }
+
+  function displayName(source) {
+    return String(source.source_name || source.name || "")
+      .replace(/\s*[—–-]\s*Sayfa\s*\d+\s*$/i, "")
+      .replace(/\s*[—–-]\s*Madde\s+[\dA-Z/]+\s*$/i, "")
+      .replace(/\.pdf$/i, "")
+      .trim();
+  }
+
+  function shortArticle(ref) {
+    return String(ref || "")
+      .replace(/^\s*Madde\s+/i, "m.")
+      .trim();
+  }
+
+  function cleanSnippet(text) {
+    var skip = /^(?:\[Kaynak:|Dosya:|Sayfa:|Belge:|Madde:|Kategori:|Terim:)/i;
+    var kept = String(text || "")
+      .split(/\n+/)
+      .map(function (line) {
+        return line.trim();
+      })
+      .filter(function (line) {
+        return line && !skip.test(line);
+      });
+    var out = kept.join(" ").replace(/\s+/g, " ").trim();
+    if (out.length > 280) {
+      out = out.slice(0, 279).replace(/\s+\S*$/, "") + "…";
+    }
+    return out;
+  }
+
   function sourceHeading(source) {
-    var name = source.source_name || source.name || t("src.prefix");
-    var page = source.page_number ? " · " + t("src.page", { n: source.page_number }) : "";
-    var ref = source.regulation_reference ? " / " + source.regulation_reference : "";
-    var regulator = source.regulation_source ? source.regulation_source + " · " : "";
-    return "📌 " + t("src.prefix") + ": " + regulator + name + ref + page;
+    var type = source.source_type || source.type || "";
+    if (type === "mevzuat") {
+      var law = (source.regulation_source || "").trim() || displayName(source);
+      var ref = shortArticle(source.regulation_reference);
+      return "📌 " + [law, ref].filter(Boolean).join(" · ");
+    }
+    var name = displayName(source);
+    var page = pageNumber(source);
+    var pageBit = page ? t("src.pageShort", { n: page }) : "";
+    if (
+      type === "sozlesme_referans" ||
+      type === "sozlesme" ||
+      type === "kullanici_belge"
+    ) {
+      if (name && pageBit) {
+        return name + " · " + pageBit;
+      }
+      return name || t("src.contract");
+    }
+    return name || t("src.prefix");
   }
 
   function renderCitations(listEl, sources) {
@@ -105,18 +159,15 @@
       return;
     }
     listEl.hidden = false;
-    sources.forEach(function (source, index) {
+    sources.forEach(function (source) {
       var item = document.createElement("li");
       var details = document.createElement("details");
-      if (index === 0) {
-        details.open = true;
-      }
       var summary = document.createElement("summary");
       summary.textContent = sourceHeading(source);
-      var pre = document.createElement("pre");
-      pre.className = "cite-snippet";
-      pre.textContent = source.snippet || t("src.noSnippet");
-      details.append(summary, pre);
+      var quote = document.createElement("p");
+      quote.className = "cite-snippet";
+      quote.textContent = cleanSnippet(source.snippet) || t("src.noSnippet");
+      details.append(summary, quote);
       item.appendChild(details);
       listEl.appendChild(item);
     });

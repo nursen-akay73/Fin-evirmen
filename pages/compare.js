@@ -96,6 +96,9 @@
       statusEl.textContent = message;
       statusEl.classList.add("error");
     }
+    if (window.FCFeatures) {
+      window.FCFeatures.setCompareSnapshot([], []);
+    }
   }
 
   function winnerKind(winner, filenames) {
@@ -205,6 +208,10 @@
     answerEl.appendChild(wrap);
   }
 
+  window.FCCompare = {
+    render: renderTable,
+  };
+
   slots.forEach(function (slot) {
     var key = slot.getAttribute("data-slot");
     var input = slot.querySelector("input[type='file']");
@@ -274,6 +281,9 @@
           })
         );
         renderTable(data.filenames || [], data.rows || []);
+        if (window.FCFeatures) {
+          window.FCFeatures.setCompareSnapshot(data.filenames || [], data.rows || []);
+        }
         if (statusEl) {
           statusEl.textContent = t("contract.compareReady");
           statusEl.classList.remove("error");

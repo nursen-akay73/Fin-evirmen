@@ -13,8 +13,11 @@ from db import get_connection
 from rag.chunking import chunk_text
 from rag.embeddings import embed_texts
 
+from rag.law_chunking import load_law_rows
+
 DATA_DIR = ROOT / "data"
 PDF_DIR = DATA_DIR / "sozlesme_referans"
+LAWS_DIR = DATA_DIR / "knowledge_base" / "laws"
 SOURCES = [
     {
         "file": "terim_sozlugu.json",
@@ -213,6 +216,11 @@ def main():
     pdf_rows = load_reference_pdfs()
     if pdf_rows:
         prepared.append(("sozlesme_referans", "sozlesme_referans/", pdf_rows))
+
+    law_rows = load_law_rows(LAWS_DIR)
+    if law_rows:
+        prepared.append(("mevzuat", "knowledge_base/laws/", law_rows))
+        print(f"mevzuat: {len(law_rows)} madde parçası")
 
     all_contents = [row[1] for _, _, rows in prepared for row in rows]
     print(f"Toplam {len(all_contents)} parça için yerel embedding üretiliyor...")

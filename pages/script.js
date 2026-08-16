@@ -467,6 +467,7 @@ function sourceTypeLabels() {
     sozlesme_maddesi: t("src.clause"),
     tuketici_rehberi: t("src.guide"),
     sozlesme_referans: t("src.ref"),
+    mevzuat: t("src.law"),
     kullanici_terim: t("src.userTerm"),
     kullanici_belge: t("src.userDoc"),
     kullanici_gorsel: t("src.userImg"),
@@ -484,6 +485,15 @@ function formatSourceLine(sources) {
       pages.push(source.page_number);
     }
   });
+  const law = sources.find(
+    (source) => (source.source_type || source.type) === "mevzuat"
+  );
+  if (law && !pages.length) {
+    const lawLabel = [law.regulation_source, law.regulation_reference]
+      .filter(Boolean)
+      .join(" ");
+    return `📌 Yasal Dayanak: ${lawLabel || law.source_name || law.name}`;
+  }
   const primary =
     sources.find((source) => (source.source_type || source.type) === "terim_sozlugu") ||
     sources[0];
@@ -569,6 +579,9 @@ if (askForm) {
         })
       );
       showAnswer(data.answer, data.sources, t("ask.ready"));
+      if (window.FCFeatures) {
+        window.FCFeatures.afterAnswer(data.answer);
+      }
     } catch (error) {
       showError(t("ask.error"));
     } finally {
@@ -603,6 +616,31 @@ if (uploadForm) {
     }
 
     try {
+      if (window.FCFeatures && window.FCFeatures.isStatementMode()) {
+        const scanBody = new FormData();
+        scanBody.append("file", files[0]);
+        scanBody.append("lang", currentLang());
+        setBusy(uploadButton, true, t("statement.busy"));
+        const data = await parseJson(
+          await fetch("/api/statement/scan", { method: "POST", body: scanBody })
+        );
+        if (window.FCFeatures.renderFlags) {
+          window.FCFeatures.renderFlags(data.flags || [], data.legal_basis || "");
+        }
+        if (window.FCUI) {
+          window.FCUI.renderCitations(sourcesEl, data.sources || []);
+          window.FCUI.setFileStatus(document.getElementById("file-status"), files, "ready");
+          window.FCUI.setResultState(document.querySelector(".results"), "ready");
+        }
+        if (statusEl) {
+          statusEl.textContent = t("statement.ready");
+          statusEl.classList.remove("error");
+        }
+        if (contractChat) {
+          contractChat.hidden = true;
+        }
+        return;
+      }
       const data = await parseJson(
         await fetch("/api/upload-sozlesme", {
           method: "POST",
@@ -614,6 +652,9 @@ if (uploadForm) {
         ? t("contract.named", { name: names.join(", ") })
         : t("contract.ready");
       showAnswer(data.answer, data.sources, label);
+      if (window.FCFeatures) {
+        window.FCFeatures.afterAnswer(data.answer);
+      }
       if (window.FCUI) {
         window.FCUI.setFileStatus(document.getElementById("file-status"), files, "ready");
       }
@@ -629,7 +670,11 @@ if (uploadForm) {
         window.FCUI.setFileStatus(document.getElementById("file-status"), files, "picked");
       }
     } finally {
-      setBusy(uploadButton, false, t("contract.submit"));
+      const doneLabel =
+        window.FCFeatures && window.FCFeatures.isStatementMode()
+          ? t("statement.submit")
+          : t("contract.submit");
+      setBusy(uploadButton, false, doneLabel);
     }
   });
 }
@@ -926,6 +971,37 @@ const kbDocName = document.getElementById("kb-doc-name");
 const kbImageName = document.getElementById("kb-image-name");
 const kbStats = document.getElementById("kb-stats");
 
+const kbQueue = document.getElementById("kb-queue");
+
+function kbQueueId(name) {
+  return "kbq-" + String(name || "").replace(/[^a-z0-9]+/gi, "-").slice(0, 48);
+}
+
+function kbQueueMark(name, state, message) {
+  if (!kbQueue || !name) {
+    return;
+  }
+  kbQueue.hidden = false;
+  const id = kbQueueId(name);
+  let item = document.getElementById(id);
+  if (!item) {
+    item = document.createElement("li");
+    item.id = id;
+    item.innerHTML =
+      '<span class="kb-queue-name"></span><span class="kb-queue-bar"><i></i></span><span class="kb-queue-state"></span>';
+    item.querySelector(".kb-queue-name").textContent = name;
+    kbQueue.prepend(item);
+  }
+  item.className = "kb-queue-item is-" + state;
+  const labels = {
+    queued: t("kb.queue.wait"),
+    busy: t("kb.queue.busy"),
+    done: t("kb.queue.done"),
+    fail: message || t("kb.queue.fail"),
+  };
+  item.querySelector(".kb-queue-state").textContent = labels[state] || state;
+}
+
 async function refreshStats() {
   if (!kbStats) {
     return;
@@ -945,18 +1021,28 @@ async function refreshStats() {
 
 if (kbDocFile && kbDocName) {
   kbDocFile.addEventListener("change", () => {
-    kbDocName.textContent = kbDocFile.files[0] ? kbDocFile.files[0].name : t("kb.docPick");
+    const files = Array.from(kbDocFile.files || []);
+    kbDocName.textContent = files.length
+      ? files.map((file) => file.name).join(", ")
+      : t("kb.docPick");
+    files.forEach((file) => kbQueueMark(file.name, "queued"));
   });
   bindDropZone(kbDocFile, {
+    maxFiles: 5,
     accept: (file) =>
       /pdf|plain|markdown/.test(file.type) || /\.(pdf|txt|md)$/i.test(file.name),
   });
 }
 if (kbImageFile && kbImageName) {
   kbImageFile.addEventListener("change", () => {
-    kbImageName.textContent = kbImageFile.files[0] ? kbImageFile.files[0].name : t("kb.imgPick");
+    const files = Array.from(kbImageFile.files || []);
+    kbImageName.textContent = files.length
+      ? files.map((file) => file.name).join(", ")
+      : t("kb.imgPick");
+    files.forEach((file) => kbQueueMark(file.name, "queued"));
   });
   bindDropZone(kbImageFile, {
+    maxFiles: 5,
     accept: (file) =>
       /^image\//.test(file.type) || /\.(png|jpe?g|webp)$/i.test(file.name),
   });
@@ -999,17 +1085,28 @@ if (termForm) {
 if (docForm) {
   docForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const file = kbDocFile.files[0];
-    if (!file) {
+    const files = Array.from((kbDocFile && kbDocFile.files) || []);
+    if (!files.length) {
       showError(t("kb.docRequired"));
       return;
     }
-    const body = new FormData();
-    body.append("file", file);
     setBusy(docButton, true, t("kb.adding"));
+    const notes = [];
     try {
-      const data = await parseJson(await fetch("/api/knowledge/document", { method: "POST", body }));
-      showAnswer(data.message, [], t("kb.docAdded"));
+      for (const file of files) {
+        kbQueueMark(file.name, "busy");
+        const body = new FormData();
+        body.append("file", file);
+        try {
+          const data = await parseJson(await fetch("/api/knowledge/document", { method: "POST", body }));
+          kbQueueMark(file.name, "done");
+          notes.push(data.message);
+        } catch (error) {
+          kbQueueMark(file.name, "fail", error.message);
+          notes.push(error.message);
+        }
+      }
+      showAnswer(notes.join("\n"), [], t("kb.docAdded"));
       docForm.reset();
       kbDocName.textContent = t("kb.docPick");
       refreshStats();
@@ -1024,20 +1121,31 @@ if (docForm) {
 if (imageForm) {
   imageForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const file = kbImageFile.files[0];
-    if (!file) {
+    const files = Array.from((kbImageFile && kbImageFile.files) || []);
+    if (!files.length) {
       showError(t("kb.imgRequired"));
       return;
     }
-    const body = new FormData();
-    body.append("file", file);
     setBusy(imageButton, true, t("kb.reading"));
+    const notes = [];
     try {
-      const data = await parseJson(await fetch("/api/knowledge/image", { method: "POST", body }));
-      const detail = data.extracted
-        ? `${data.message}\n\n${t("kb.extracted")}\n${data.extracted}`
-        : data.message;
-      showAnswer(detail, [], t("kb.imgAdded"));
+      for (const file of files) {
+        kbQueueMark(file.name, "busy");
+        const body = new FormData();
+        body.append("file", file);
+        try {
+          const data = await parseJson(await fetch("/api/knowledge/image", { method: "POST", body }));
+          kbQueueMark(file.name, "done");
+          const detail = data.extracted
+            ? `${data.message}\n${t("kb.extracted")}\n${data.extracted}`
+            : data.message;
+          notes.push(detail);
+        } catch (error) {
+          kbQueueMark(file.name, "fail", error.message);
+          notes.push(error.message);
+        }
+      }
+      showAnswer(notes.join("\n\n"), [], t("kb.imgAdded"));
       imageForm.reset();
       kbImageName.textContent = t("kb.imgPick");
       refreshStats();

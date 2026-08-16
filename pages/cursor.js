@@ -2,7 +2,7 @@
   var RING_EASE = 0.18;
   var DOT_EASE = 0.42;
   var HOVER =
-    "a, button, .card, .why-card, .compare-slot, .file-label, .glossary-card, .insight-card, .story-card, .link-btn, .how-cta, .mic-button, .speak-button, .site-brand, .glossary-filters button, .kb-grid form";
+    "a, button, .card, .why-card, .process-card, .compare-slot, .file-label, .glossary-card, .glossary-ask, .insight-card, .story-card, .link-btn, .how-cta, .mic-button, .speak-button, .site-brand, .glossary-filters button, .kb-grid form, .sheet-close, .quick-chip, .tool-tab, .export-btn";
   var TILT = ".page .card, .glossary-card, .insight-card, .story-card, .compare-slot, .kb-grid form";
   var MAGNET = "button:not(.lang-switch):not(:disabled), a.link-btn, a.how-cta, .mic-button";
 

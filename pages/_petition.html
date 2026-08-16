@@ -1,0 +1,34 @@
+<div class="sheet-root" id="petition-sheet" hidden>
+  <div class="sheet-overlay" data-sheet-close></div>
+  <aside class="sheet" role="dialog" aria-modal="true" aria-labelledby="petition-sheet-title">
+    <button type="button" class="sheet-close" data-sheet-close data-i18n-aria="glossary.sheet.close" aria-label="Kapat">×</button>
+    <p class="why-us-badge" data-i18n="petition.badge">Taslak · hukuki tavsiye değil</p>
+    <h2 id="petition-sheet-title" data-i18n="petition.title">İtiraz dilekçesi</h2>
+    <p class="hint" id="petition-topic"></p>
+    <label class="petition-field">
+      <span data-i18n="petition.bank">Banka adı</span>
+      <input id="petition-bank" type="text" data-i18n-placeholder="petition.bankPh" placeholder="Örn. X Bankası" />
+    </label>
+    <label class="petition-field">
+      <span data-i18n="petition.province">İl</span>
+      <select id="petition-province">
+        <option value="" data-i18n="petition.provincePh">İl seçin</option>
+      </select>
+    </label>
+    <label class="petition-field">
+      <span data-i18n="petition.place">İlçe kaymakamlığı</span>
+      <select id="petition-place" disabled>
+        <option value="" data-i18n="petition.placeFirst">Önce il seçin</option>
+      </select>
+    </label>
+    <label class="petition-field">
+      <span data-i18n="petition.date">Tarih</span>
+      <input id="petition-date" type="date" />
+    </label>
+    <pre class="petition-preview" id="petition-preview"></pre>
+    <div class="petition-actions">
+      <button type="button" id="petition-build" class="export-btn is-ghost" data-i18n="petition.build">Taslağı oluştur</button>
+      <button type="button" id="petition-pdf" class="export-btn is-gold" data-i18n="petition.pdf">PDF indir</button>
+    </div>
+  </aside>
+</div>

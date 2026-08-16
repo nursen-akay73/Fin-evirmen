@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {% include "_head.html" %}
     <title>Sözlük — FinÇevirmen</title>
-    <link rel="stylesheet" href="/style.css?v=brand15" />
+    <link rel="stylesheet" href="/style.css?v=brand18" />
   </head>
   <body class="site-body inner-body" data-title-key="doc.title.glossary">
     {% include "_nav.html" %}
@@ -35,8 +35,25 @@
       </section>
       <div id="glossary-grid" class="glossary-grid" aria-live="polite"></div>
     </div>
+
+    <div class="sheet-root" id="glossary-sheet" hidden>
+      <div class="sheet-overlay" data-sheet-close></div>
+      <aside class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+        <button type="button" class="sheet-close" data-sheet-close data-i18n-aria="glossary.sheet.close" aria-label="Kapat">
+          ×
+        </button>
+        <span class="glossary-badge" id="sheet-badge"></span>
+        <h2 id="sheet-title"></h2>
+        <p class="sheet-body" id="sheet-body"></p>
+        <div class="sheet-legal" id="sheet-legal"></div>
+        <a class="sheet-cta" id="sheet-ask" href="/" data-transition data-i18n="glossary.sheet.home">
+          Ana sayfada sor
+        </a>
+      </aside>
+    </div>
+
     {% include "_footer.html" %}
-    <script src="/i18n.js?v=brand16"></script>
-    <script src="/glossary.js?v=g2"></script>
+    <script src="/i18n.js?v=brand22"></script>
+    <script src="/glossary.js?v=g3"></script>
   </body>
 </html>
