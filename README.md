@@ -25,3 +25,10 @@ Bilgi parçalarına `regulation_source`, `last_updated_date` ve
 ```
 
 Tarayıcı: http://127.0.0.1:5000
+
+## Mimari
+
+- Ürün (amaç, kitle, akış, RAG, MCP): [docs/URUN.md](docs/URUN.md)
+- RAG (retrieve-then-rerank): [docs/RAG.md](docs/RAG.md)
+- MCP (yalnızca bu repo): [docs/MCP.md](docs/MCP.md)
+

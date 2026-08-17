@@ -6,3 +6,5 @@ pdfplumber
 fastembed
 fpdf2
 sentence-transformers
+mcp>=2.0.0
+gunicorn

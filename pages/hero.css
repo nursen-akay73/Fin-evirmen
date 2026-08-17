@@ -527,6 +527,7 @@
 .hero-stage svg.connections {
   position: absolute;
   inset: 0;
+  z-index: 2;
   width: 100%;
   height: 100%;
   pointer-events: none;
@@ -534,20 +535,29 @@
 }
 
 .hero-stage svg.connections line {
-  stroke: rgba(255, 183, 77, 0.42);
-  stroke-width: 1.35;
+  stroke: rgba(232, 163, 61, 0.22);
+  stroke-width: 1;
   stroke-linecap: round;
-  opacity: var(--line-opacity);
-  transition: stroke 0.55s var(--ease-soft);
+  opacity: 0;
+  transition: stroke 0.55s var(--ease-soft), opacity 0.35s var(--ease-soft);
 }
 
-.hero-stage svg.connections line.is-flowing {
-  stroke: rgba(255, 183, 77, 0.42);
+.hero-stage svg.connections line.is-mute {
+  stroke: rgba(148, 163, 184, 0.08);
+}
+
+.hero-stage svg.connections line.is-lit {
+  stroke: rgba(232, 163, 61, 0.42);
+}
+
+.hero-stage svg.connections line.is-flowing,
+.hero-stage svg.connections line.is-hot {
+  opacity: var(--line-opacity);
 }
 
 .hero-stage svg.connections line.is-hot {
-  stroke: rgba(255, 183, 77, 0.9);
-  stroke-width: 1.4;
+  stroke: rgba(255, 183, 77, 0.92);
+  stroke-width: 1.35;
 }
 
 .hero-stage svg.connections .pulse {
@@ -555,12 +565,123 @@
   opacity: 0.9;
 }
 
+.orbit-fx,
+.orbit-wheel {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.orbit-wheel {
+  z-index: 1;
+  transform-origin: 50% 50%;
+  animation: orbit 30s linear infinite;
+  will-change: transform;
+}
+
+.orbit-fx {
+  z-index: 0;
+}
+
+.orbit-hub {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 38%;
+  height: 38%;
+  margin: -19% 0 0 -19%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(11, 15, 23, 0.96) 0%, rgba(11, 15, 23, 0.88) 62%, transparent 78%);
+  box-shadow:
+    0 0 0 1px rgba(232, 163, 61, 0.16),
+    0 0 42px rgba(232, 163, 61, 0.08);
+}
+
+.orbit-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--ring);
+  height: var(--ring);
+  margin: calc(var(--ring) / -2) 0 0 calc(var(--ring) / -2);
+  border: 1.5px dashed rgba(148, 163, 184, 0.28);
+  border-radius: 50%;
+}
+
+.orbit-scan {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 38%;
+  height: 38%;
+  margin: -19% 0 0 -19%;
+  border: 1px solid rgba(232, 163, 61, 0.22);
+  border-radius: 50%;
+  animation: orbit-scan 7.2s linear infinite;
+}
+
+.orbit-scan.is-late {
+  animation-delay: -3.6s;
+}
+
+.orbit-spoke {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1.5px;
+  height: 46%;
+  margin-left: -0.75px;
+  background: linear-gradient(
+    to top,
+    rgba(232, 163, 61, 0.55) 0%,
+    rgba(232, 163, 61, 0.18) 58%,
+    rgba(232, 163, 61, 0.04) 100%
+  );
+  transform-origin: 50% 0;
+  transform: rotate(var(--a));
+  border-radius: 1px;
+}
+
+.orbit-speck {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  border-radius: 50%;
+  transform: rotate(var(--start)) translateY(calc(var(--radius) * -1));
+}
+
+.orbit-speck.is-gold {
+  background: #e8a33d;
+  box-shadow: 0 0 10px rgba(232, 163, 61, 0.85);
+}
+
+.orbit-speck.is-blue {
+  background: #93c5fd;
+  box-shadow: 0 0 10px rgba(147, 197, 253, 0.75);
+}
+
+.orbit-node {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  transform: rotate(var(--start)) translateY(calc(var(--radius) * -1)) rotate(calc(var(--start) * -1));
+  pointer-events: none;
+  z-index: 2;
+}
+
 .logo-core {
   position: absolute;
-  inset: 32%;
+  inset: 34%;
   display: grid;
   place-items: center;
-  z-index: 3;
+  z-index: 4;
   transform:
     translate3d(var(--logox, 0), var(--logoy, 0), 0)
     scale(var(--logo-scale));
@@ -608,63 +729,82 @@
   transform-origin: center;
 }
 
-.orbit-arm {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: var(--radius);
-  height: var(--radius);
-  margin: calc(var(--radius) / -2) 0 0 calc(var(--radius) / -2);
-  transform-origin: center;
-  will-change: transform;
-  pointer-events: none;
-}
-
 .node-spin {
   pointer-events: none;
   position: absolute;
-  top: 0;
-  left: 50%;
-  width: 54px;
-  height: 54px;
-  margin-left: -27px;
-  margin-top: -27px;
+  inset: 0;
+  transform-origin: 50% 50%;
+  animation: counter-orbit 30s linear infinite;
   will-change: transform;
-}
-
-.node-float {
-  width: 100%;
-  height: 100%;
-  animation: node-float var(--float-duration, 6.4s) ease-in-out infinite;
-  animation-delay: var(--float-delay, 0s);
 }
 
 .currency-node {
   pointer-events: auto;
   position: relative;
-  width: 54px;
-  height: 54px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   align-self: auto;
-  border: 1px solid rgba(255, 183, 77, 0.45);
+  border: 1px solid rgba(255, 183, 77, 0.4);
   border-radius: 50%;
   background:
-    radial-gradient(circle at 35% 30%, rgba(255, 183, 77, 0.12), transparent 46%),
-    rgba(12, 20, 40, 0.92);
+    radial-gradient(circle at 35% 30%, rgba(255, 183, 77, 0.14), transparent 46%),
+    rgba(8, 14, 28, 0.92);
   color: var(--gold);
-  font: 600 1.15rem/1 var(--font);
+  font: 600 1.05rem/1 var(--font);
   cursor: pointer;
   box-shadow:
-    0 0 0 6px rgba(255, 183, 77, 0.04),
-    0 0 18px rgba(255, 183, 77, 0.08);
+    0 0 0 5px rgba(255, 183, 77, 0.04),
+    0 0 16px rgba(255, 183, 77, 0.08);
   transform: translate3d(var(--nx, 0), var(--ny, 0), 0);
-  animation: node-glow var(--glow-duration, 5.4s) ease-in-out infinite;
-  animation-delay: var(--glow-delay, 0s);
   transition:
     transform 0.35s var(--ease-out),
     box-shadow 0.35s var(--ease-soft),
     border-color 0.35s var(--ease-soft),
     opacity 0.25s var(--ease-soft);
+}
+
+.currency-node.is-lit {
+  animation: node-pulse 5.4s ease-in-out infinite;
+}
+
+.currency-node.is-gold.is-lit {
+  color: #e8a33d;
+  border-color: rgba(232, 163, 61, 0.72);
+  box-shadow:
+    0 0 0 5px rgba(232, 163, 61, 0.08),
+    0 0 22px rgba(232, 163, 61, 0.48);
+}
+
+.currency-node.is-green.is-lit {
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.7);
+  background:
+    radial-gradient(circle at 35% 30%, rgba(74, 222, 128, 0.16), transparent 48%),
+    rgba(8, 14, 28, 0.92);
+  box-shadow:
+    0 0 0 5px rgba(74, 222, 128, 0.08),
+    0 0 22px rgba(74, 222, 128, 0.42);
+}
+
+.currency-node.is-blue.is-lit {
+  color: #93c5fd;
+  border-color: rgba(147, 197, 253, 0.7);
+  background:
+    radial-gradient(circle at 35% 30%, rgba(147, 197, 253, 0.16), transparent 48%),
+    rgba(8, 14, 28, 0.92);
+  box-shadow:
+    0 0 0 5px rgba(147, 197, 253, 0.08),
+    0 0 22px rgba(125, 211, 252, 0.38);
+}
+
+.currency-node.is-mute {
+  color: rgba(148, 163, 184, 0.72);
+  border-color: rgba(148, 163, 184, 0.22);
+  background: rgba(12, 20, 40, 0.42);
+  box-shadow: none;
+  opacity: 0.4;
+  animation: none;
 }
 
 .currency-node .label {
@@ -702,6 +842,11 @@
 .currency-node:focus-visible .label,
 .hero-stage.is-hot .currency-node.is-active .label {
   opacity: 1;
+}
+
+.currency-node.is-mute:hover,
+.currency-node.is-mute:focus-visible {
+  opacity: 0.88;
 }
 
 .hero-stage.is-hot .currency-node:not(.is-active) {
@@ -1097,17 +1242,27 @@ html.fc-intro .fc-cursor {
   }
 }
 
-@keyframes node-glow {
+@keyframes node-pulse {
   0%,
   100% {
-    box-shadow:
-      0 0 0 6px rgba(255, 183, 77, 0.04),
-      0 0 16px rgba(255, 183, 77, 0.07);
+    filter: brightness(1);
   }
   50% {
-    box-shadow:
-      0 0 0 8px rgba(255, 183, 77, 0.08),
-      0 0 24px rgba(255, 183, 77, 0.16);
+    filter: brightness(1.18);
+  }
+}
+
+@keyframes orbit-scan {
+  0% {
+    transform: scale(1);
+    opacity: 0.45;
+  }
+  70% {
+    opacity: 0.12;
+  }
+  100% {
+    transform: scale(2.35);
+    opacity: 0;
   }
 }
 
@@ -1179,19 +1334,19 @@ html.fc-intro .fc-cursor {
     justify-content: center;
   }
 
+  .orbit-node,
   .node-spin,
   .currency-node {
-    width: 46px;
-    height: 46px;
+    width: 38px;
+    height: 38px;
   }
 
-  .node-spin {
-    margin-left: -23px;
-    margin-top: -23px;
+  .orbit-node {
+    margin: -19px 0 0 -19px;
   }
 
   .currency-node {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .hero-cursor-light {
@@ -1231,7 +1386,7 @@ html.fc-intro .fc-cursor {
 
 @media (prefers-reduced-motion: reduce) {
   .orbit-arm,
-  .node-spin,
+  .orbit-scan,
   .node-float,
   .hero-atmosphere,
   .hero-particle,

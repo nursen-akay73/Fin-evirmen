@@ -23,6 +23,7 @@ from rag.llm_client import (
     generate_answer,
     transcribe_audio,
 )
+from rag.pipeline import answer_question
 from rag.retrieval import retrieve_chunks, legal_basis_line
 from rag.reranker import warmup_reranker
 from rag.session_store import (
@@ -232,34 +233,10 @@ def ask():
         return jsonify({"error": error}), 400
 
     try:
-        chunks = retrieve_chunks(question, limit=3)
-        if not chunks:
-            error = (
-                "No matching records in the knowledge base. Run python scripts/ingest_data.py first."
-                if lang == "en"
-                else "Bilgi tabanında ilgili kayıt bulunamadı. "
-                "Önce python scripts/ingest_data.py komutunu çalıştırın."
-            )
-            return jsonify({"error": error}), 404
-
-        answer = generate_answer(
-            question,
-            [chunk["content"] for chunk in chunks],
-            extra_instructions=(
-                "If the context contains official statute text, end with one line: "
-                "'📌 Legal basis: ...' using only article numbers in the context."
-                if lang == "en"
-                else "Bağlamda resmi mevzuat varsa cevabın sonuna tek satır ekle: "
-                "'📌 Yasal Dayanak: ...' Yalnızca bağlamdaki kanun/tebliğ ve madde numarasını yaz; uydurma."
-            ),
-            last_updated_dates=[chunk.get("last_updated_date") for chunk in chunks],
-            language=lang,
-        )
-        basis = legal_basis_line(chunks, language=lang)
-        if basis and "Yasal Dayanak" not in answer and "Legal basis" not in answer:
-            answer = answer.rstrip() + "\n\n" + basis
-        sources = [_chunk_source(chunk) for chunk in chunks]
-        return jsonify({"answer": answer, "sources": sources})
+        result = answer_question(question, language=lang)
+        if not result["ok"]:
+            return jsonify({"error": result["error"]}), int(result.get("status") or 400)
+        return jsonify({"answer": result["answer"], "sources": result["sources"]})
     except Exception as error:
         return jsonify({"error": f"Sorunuz yanıtlanırken bir hata oluştu: {error}"}), 500
 

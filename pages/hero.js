@@ -2,62 +2,27 @@
   const EASE = 0.075;
   const LIGHT_EASE = 0.08;
   const CURRENCIES = [
-    {
-      code: "TRY",
-      symbol: "₺",
-      name: "Türk Lirası",
-      radius: 0.62,
-      duration: 30,
-      reverse: false,
-      start: 12,
-      floatX: "1px",
-      floatY: "-1px",
-      floatDuration: "8s",
-      glowDuration: "4.8s",
-      glowDelay: "-1.2s",
-    },
-    {
-      code: "USD",
-      symbol: "$",
-      name: "ABD Doları",
-      radius: 0.74,
-      duration: 30,
-      reverse: false,
-      start: 102,
-      floatX: "1px",
-      floatY: "1px",
-      floatDuration: "9s",
-      glowDuration: "6.1s",
-      glowDelay: "-2.4s",
-    },
-    {
-      code: "EUR",
-      symbol: "€",
-      name: "Euro",
-      radius: 0.8,
-      duration: 30,
-      reverse: false,
-      start: 198,
-      floatX: "0px",
-      floatY: "-1px",
-      floatDuration: "10s",
-      glowDuration: "5.5s",
-      glowDelay: "-0.6s",
-    },
-    {
-      code: "GBP",
-      symbol: "£",
-      name: "Sterlin",
-      radius: 0.94,
-      duration: 30,
-      reverse: false,
-      start: 288,
-      floatX: "-1px",
-      floatY: "1px",
-      floatDuration: "11s",
-      glowDuration: "6.6s",
-      glowDelay: "-3.1s",
-    },
+    { code: "TRY", symbol: "₺", name: "Türk Lirası", radius: 0.38, start: 18, tone: "gold", active: true },
+    { code: "USD", symbol: "$", name: "ABD Doları", radius: 0.46, start: 52, tone: "mute", active: false },
+    { code: "EUR", symbol: "€", name: "Euro", radius: 0.38, start: 86, tone: "blue", active: true },
+    { code: "GBP", symbol: "£", name: "Sterlin", radius: 0.3, start: 122, tone: "mute", active: false },
+    { code: "JPY", symbol: "¥", name: "Yen", radius: 0.46, start: 158, tone: "mute", active: false },
+    { code: "BTC", symbol: "₿", name: "Bitcoin", radius: 0.38, start: 196, tone: "green", active: true },
+    { code: "INR", symbol: "₹", name: "Rupi", radius: 0.38, start: 232, tone: "gold", active: true },
+    { code: "RUB", symbol: "₽", name: "Ruble", radius: 0.46, start: 272, tone: "blue", active: true },
+    { code: "EUR2", symbol: "€", name: "Euro", radius: 0.3, start: 312, tone: "mute", active: false },
+    { code: "CAD", symbol: "$", name: "Dolar", radius: 0.3, start: 344, tone: "mute", active: false },
+  ];
+  const SPECKS = [
+    { r: 0.3, a: 28, tone: "gold" },
+    { r: 0.3, a: 208, tone: "blue" },
+    { r: 0.38, a: 64, tone: "gold" },
+    { r: 0.38, a: 142, tone: "blue" },
+    { r: 0.38, a: 254, tone: "gold" },
+    { r: 0.46, a: 8, tone: "gold" },
+    { r: 0.46, a: 104, tone: "blue" },
+    { r: 0.46, a: 176, tone: "gold" },
+    { r: 0.46, a: 304, tone: "blue" },
   ];
 
   const PARTICLE_KINDS = ["dot", "dot", "plus", "dash", "dot"];
@@ -236,43 +201,25 @@
   }
 
   class CurrencyNode {
-    constructor(currency, stageSize, reducedMotion) {
+    constructor(currency, stageSize) {
       this.currency = currency;
       this.arm = document.createElement("div");
-      this.arm.className = "orbit-arm";
+      this.arm.className = "orbit-node";
+      this.arm.style.setProperty("--start", `${currency.start}deg`);
       this.arm.style.setProperty("--radius", `${currency.radius * stageSize}px`);
-      this.arm.style.setProperty("--duration", `${currency.duration}s`);
-      this.arm.style.setProperty("--direction", currency.reverse ? "reverse" : "normal");
 
       this.holder = document.createElement("div");
       this.holder.className = "node-spin";
 
-      this.float = document.createElement("div");
-      this.float.className = "node-float";
-      this.float.style.setProperty("--float-x", currency.floatX);
-      this.float.style.setProperty("--float-y", currency.floatY);
-      this.float.style.setProperty("--float-duration", currency.floatDuration);
-      this.float.style.setProperty("--float-delay", `${currency.start / -48}s`);
-
       this.button = document.createElement("button");
       this.button.type = "button";
-      this.button.className = "currency-node";
+      this.button.className = `currency-node is-${currency.tone}${currency.active ? " is-lit" : " is-mute"}`;
       this.button.dataset.code = currency.code;
       this.button.setAttribute("aria-label", `${currency.code}, ${currency.name}`);
       this.button.innerHTML = `${currency.symbol}<span class="label">${currency.code} · ${currency.name}</span>`;
-      this.button.style.setProperty("--glow-duration", currency.glowDuration);
-      this.button.style.setProperty("--glow-delay", currency.glowDelay);
 
-      this.float.appendChild(this.button);
-      this.holder.appendChild(this.float);
+      this.holder.appendChild(this.button);
       this.arm.appendChild(this.holder);
-      this.arm.style.animation = "none";
-      this.holder.style.animation = "none";
-      this.arm.style.transform = `rotate(${currency.start}deg)`;
-      this.holder.style.transform = `rotate(${-currency.start}deg)`;
-      if (reducedMotion) {
-        this.float.style.animation = "none";
-      }
     }
   }
 
@@ -293,10 +240,12 @@
       this.lines = nodes.map((node) => {
         const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
         line.dataset.code = node.button.dataset.code;
+        line.classList.toggle("is-lit", node.currency.active);
+        line.classList.toggle("is-mute", !node.currency.active);
         this.svg.appendChild(line);
-        return { line, node: node.button };
+        return { line, node: node.button, lit: node.currency.active };
       });
-      this.pulses = this.lines.slice(0, 2).map((item, index) => {
+      this.pulses = this.lines.filter((item) => item.lit).slice(0, 2).map((item, index) => {
         const pulse = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         pulse.setAttribute("r", "2.2");
         pulse.classList.add("pulse");
@@ -388,16 +337,66 @@
       this.stage = stage;
       this.reducedMotion = options.reducedMotion;
       this.nodes = [];
+      this.wheel = null;
+      this.fx = null;
       this.lines = new ConnectionLines(stage, options.onPulseArrive);
       this.build();
     }
 
     build() {
-      this.nodes.forEach((node) => node.arm.remove());
-      const size = this.stage.clientWidth;
+      if (this.wheel) {
+        this.wheel.remove();
+      }
+      if (this.fx) {
+        this.fx.remove();
+      }
+      const size = this.stage.clientWidth || 480;
+      const logo = this.stage.querySelector("[data-logo-core]");
+
+      this.fx = document.createElement("div");
+      this.fx.className = "orbit-fx";
+      this.fx.setAttribute("aria-hidden", "true");
+      this.fx.innerHTML =
+        '<span class="orbit-hub"></span>' +
+        '<span class="orbit-scan"></span>' +
+        '<span class="orbit-scan is-late"></span>';
+
+      this.wheel = document.createElement("div");
+      this.wheel.className = "orbit-wheel";
+
+      [60, 76, 92].forEach((ring) => {
+        const el = document.createElement("span");
+        el.className = "orbit-ring";
+        el.style.setProperty("--ring", `${ring}%`);
+        this.wheel.appendChild(el);
+      });
+
+      for (let index = 0; index < 8; index += 1) {
+        const spoke = document.createElement("span");
+        spoke.className = "orbit-spoke";
+        spoke.style.setProperty("--a", `${index * 45}deg`);
+        this.wheel.appendChild(spoke);
+      }
+
+      SPECKS.forEach((speck) => {
+        const el = document.createElement("span");
+        el.className = `orbit-speck is-${speck.tone}`;
+        el.style.setProperty("--start", `${speck.a}deg`);
+        el.style.setProperty("--radius", `${speck.r * size}px`);
+        this.wheel.appendChild(el);
+      });
+
+      if (logo) {
+        this.stage.insertBefore(this.fx, logo);
+        this.stage.insertBefore(this.wheel, logo);
+      } else {
+        this.stage.appendChild(this.fx);
+        this.stage.appendChild(this.wheel);
+      }
+
       this.nodes = CURRENCIES.map((currency) => {
-        const node = new CurrencyNode(currency, size, this.reducedMotion);
-        this.stage.appendChild(node.arm);
+        const node = new CurrencyNode(currency, size);
+        this.wheel.appendChild(node.arm);
         node.button.addEventListener("mouseenter", () => this.activate(node));
         node.button.addEventListener("focus", () => this.activate(node));
         node.button.addEventListener("mouseleave", () => this.clear());
@@ -429,14 +428,8 @@
       });
     }
 
-    tick(now) {
-      const period = 30000;
-      const spin = (now / period) * 360;
-      this.nodes.forEach((node) => {
-        const rot = node.currency.start + spin;
-        node.arm.style.transform = `rotate(${rot}deg)`;
-        node.holder.style.transform = `rotate(${-rot}deg)`;
-      });
+    tick() {
+      return;
     }
   }
 

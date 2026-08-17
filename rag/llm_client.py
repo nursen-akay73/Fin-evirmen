@@ -164,7 +164,14 @@ def generate_answer(
         messages=messages,
         temperature=0.3,
     )
-    answer = completion.choices[0].message.content or ""
+    message = completion.choices[0].message
+    answer = (message.content or "").strip()
+    if not answer:
+        answer = (
+            getattr(message, "reasoning", None)
+            or getattr(message, "reasoning_content", None)
+            or ""
+        ).strip()
     notice = freshness_notice(last_updated_dates, language=lang)
     if notice:
         answer = answer.rstrip() + "\n\n" + notice

@@ -7,7 +7,14 @@ load_dotenv()
 NEON_DATABASE_URL = os.getenv("NEON_DATABASE_URL", "")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "groq")
-LLM_MODEL = os.getenv("LLM_MODEL", "llama-3.3-70b-versatile")
+_DEFAULT_LLM = "openai/gpt-oss-120b"
+_RETIRED_LLM = {
+    "llama-3.3-70b-versatile",
+    "llama-3.1-70b-versatile",
+    "llama3-70b-8192",
+}
+_raw_llm = os.getenv("LLM_MODEL", _DEFAULT_LLM)
+LLM_MODEL = _DEFAULT_LLM if _raw_llm in _RETIRED_LLM else _raw_llm
 EMBEDDING_MODEL = os.getenv(
     "EMBEDDING_MODEL",
     "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
